@@ -1,0 +1,80 @@
+<!doctype html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Register — Swap R Book</title>
+
+    <link rel="stylesheet" href="css/register.css" />
+</head>
+
+<body>
+    <main class="wrapper center">
+        <section class="card">
+            <h1 class="title">Welcome Onboard!</h1>
+            <p class="subtitle">Lets help you to set all up!</p>
+
+            <form id="registerForm" novalidate>
+            <div class="row">
+                <input
+                    class="field"
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    autocomplete="given-name"
+                    required
+                    minlength="2"
+                />
+                <input
+                    class="field"
+                    type="text"
+                    name="lastName"
+                    placeholder="Last Name"
+                    autocomplete="family-name"
+                    required
+                    minlength="2"
+                />
+            </div>
+
+            <input
+                class="field"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+                required
+            />
+
+            <input
+                class="field"
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="new-password"
+                required
+                minlength="8"
+            />
+
+            <input
+                class="field"
+                type="password"
+                name="confirm"
+                placeholder="Confirm password"
+                autocomplete="new-password"
+                required
+                minlength="8"
+            />
+
+            <button id="submitBtn" class="btn" type="submit">Register</button>
+
+            <p class="hint">
+                Already have an account?
+                <a class="link" href="login.html">Log in</a>
+            </p>
+
+            <p id="formMsg" class="msg"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="js/register.js"></script>
+  </body>
+</html>
