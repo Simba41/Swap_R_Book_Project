@@ -1,0 +1,18 @@
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+
+.splash 
+{
+  height: 100vh;
+  background: #E0EFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo 
+{ 
+  width: 352px; 
+  height: 352px; 
+}
