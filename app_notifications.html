@@ -1,0 +1,16 @@
+<h1 class="h1">Notifications</h1>
+<div class="list" id="notifList"></div>
+
+<template id="tpl-item">
+  <article class="card soft" data-id="">
+    <div class="row">
+      <div><b class="n-title"></b><div class="muted n-time"></div></div>
+      <button class="btn n-open">Open</button>
+    </div>
+    <div class="n-text" style="margin-top:8px"></div>
+  </article>
+</template>
+
+<template id="tpl-empty">
+  <div class="muted">No notifications.</div>
+</template>

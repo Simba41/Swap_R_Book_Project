@@ -1,0 +1,31 @@
+<h1 class="h1">User</h1>
+
+<section class="card soft" style="display:grid; grid-template-columns:72px 1fr; gap:12px">
+  <div class="avatar" style="width:72px;height:72px"><span>👤</span></div>
+  <div>
+    <div id="uName" style="font-weight:700"></div>
+    <div class="muted" id="uBio"></div>
+    <div class="muted" id="uDist"></div>
+  </div>
+</section>
+
+<section class="card soft">
+  <div class="row">
+    <a class="btn danger" id="uReport" href="#">Report</a>
+    <a class="btn" id="uChat" href="#">Open chat</a>
+  </div>
+</section>
+
+<div class="muted" style="margin-top:8px">User's books</div>
+<div class="list" id="uBooks"></div>
+
+<template id="tpl-book">
+  <article class="card-book" data-id="">
+    <img class="cover" src="" alt="">
+    <div>
+      <h3 class="book-title"></h3>
+      <div class="book-author"></div>
+      <div class="badges"></div>
+    </div>
+  </article>
+</template>

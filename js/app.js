@@ -7,6 +7,12 @@ const routes =
   '/categories':  { view: 'app_category.html',        module: () => import('./app_category.js') },
   '/category':    { view: 'app_category_detail.html', module: () => import('./app_category_detail.js') },
   '/book':        { view: 'app_book.html',            module: () => import('./app_book.js') },
+  '/book':        { view: 'app_book.html',            module: () => import('./app_book.js') },
+  '/chat':        { view: 'app_chat.html',            module: () => import('./app_chat.js') },
+  '/report':      { view: 'app_report.html',          module: () => import('./app_report.js') },
+
+  '/likes':       { view: 'app_likes.html',           module: () => import('./app_likes.js') },
+  '/notifications':{ view:'app_notifications.html',   module: () => import('./app_notifications.js') },
 };
 
 async function loadHTML(fileName)

@@ -1,0 +1,25 @@
+<h1 class="h1">Chat</h1>
+
+<section class="chat card soft">
+  <div class="chat-header">
+    <div class="chat-peer">
+      <a id="chatPeerAvatar" class="avatar sm link" title="Open profile"><span>👤</span></a>
+      <div>
+        <div>With: <b id="chatWith"></b></div>
+        <div class="muted" id="chatMeta"></div>
+      </div>
+    </div>
+    <div class="chat-actions" style="display:flex; gap:8px">
+      <a id="openProfileBtn" class="btn" href="#">Profile</a>
+      <button id="confirmBtn" class="btn">Confirm swap</button>
+      <a id="reportBtn" class="btn danger" href="#">Report</a>
+    </div>
+  </div>
+
+  <div id="chatFeed" class="chat-feed"></div>
+
+  <div class="chat-input">
+    <input id="chatText" class="input" placeholder="Type a message..." />
+    <button id="sendBtn" class="btn primary">Send</button>
+  </div>
+</section>
