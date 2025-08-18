@@ -1,4 +1,3 @@
-// js/app.js — **ИЗМЕНЕНО**: убран дубликат '/book', мелкая чистка
 const app = document.getElementById('app');
 const tabs = document.querySelectorAll('.tabbar .tab');
 
