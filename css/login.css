@@ -50,6 +50,11 @@ body
   text-align: center;
 }
 
+.title.login
+{
+  margin-bottom: 90px;
+}
+
 .subtitle 
 {
   margin: 0 0 18px;
@@ -102,6 +107,11 @@ form
   font-weight: 600;
   font-size: 18px;
   cursor: pointer;
+}
+
+.btn.login
+{
+  margin-top: 207px;
 }
 
 .btn:disabled 

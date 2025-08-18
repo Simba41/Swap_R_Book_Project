@@ -1,0 +1,47 @@
+<!doctype html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Sign in — Swap R Book</title>
+    <link rel="stylesheet" href="css/login.css" />
+  </head>
+
+  <body>
+    <main class="wrapper center">
+      <section class="card">
+        <h1 class="title login">Let’s log in!</h1>
+
+        <form id="loginForm" novalidate>
+          <input
+            class="field"
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            autocomplete="email"
+            required
+          />
+
+          <input
+            class="field"
+            type="password"
+            name="password"
+            placeholder="Enter  password"
+            autocomplete="current-password"
+            required
+            minlength="8"
+          />
+
+          <button id="submitBtn" class="btn  login" type="submit">Sign in</button>
+
+          <p class="hint">
+            You have no account?
+            <a class="link" href="register.html">Create account</a>
+          </p>
+
+          <p id="formMsg" class="msg"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="js/login.js" defer></script>
+  </body>
+</html>
