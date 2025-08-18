@@ -1,81 +1,82 @@
-import { currentUser, demoCategories, demoBooks, defaultCover } from './demo-data.js';
+const defaultCover = 'images/placeholder.png';
 
-export function init()
+export async function init()
 {
   const nameEl = document.getElementById('userName');
-  if (nameEl) nameEl.textContent = currentUser?.name || 'Friend';
+  if (nameEl) nameEl.textContent = 'Friend';
 
-  const bell = document.getElementById('btnBell');
+  const bell  = document.getElementById('btnBell');
   const heart = document.getElementById('btnHeart');
   const badge = document.getElementById('bellBadge');
-  const c = (() => 
-    {
-      try 
-      { 
-        return (JSON.parse(localStorage.getItem('notifications')||'[]')||[]).filter(n=>!n.read).length; 
-      }
-      catch 
-      { 
-        return 0; 
-      }
-    })();
+  try 
+  {
+    const c = (JSON.parse(localStorage.getItem('notifications')||'[]')||[]).filter(n=>!n.read).length;
+    if (c>0){ badge.style.display='grid'; badge.textContent=String(c); }
+  } catch 
+  {
 
-
-  if (c>0)
-    { 
-      badge.style.display='grid'; badge.textContent=String(c); 
-    }
-
-  bell.addEventListener('click', ()=> location.hash = '#/notifications');
-  heart.addEventListener('click',()=> location.hash = '#/likes');
+  }
+  bell && bell.addEventListener('click', ()=> location.hash = '#/notifications');
+  heart && heart.addEventListener('click',()=> location.hash = '#/likes');
 
   const chips = document.getElementById('chips');
-  if (chips) 
-    chips.innerHTML = (demoCategories||[]).map(c => `<span class="chip">${c}</span>`).join('');
 
+  if (chips) chips.innerHTML = '';
 
   const list = document.getElementById('books');
   const tpl  = document.getElementById('tpl-book-card');
 
+  if (!list || !tpl) 
+    return;
 
-  if (list && tpl)
+  async function loadBooks()
+  {
+    try 
     {
-      const frag = document.createDocumentFragment();
-      (demoBooks || []).forEach(b => 
-        {
-          const card = tpl.content.firstElementChild.cloneNode(true);
-          card.dataset.id = b.id;
-          const img   = card.querySelector('.cover');
-          const title = card.querySelector('.book-title');
-          const auth  = card.querySelector('.book-author');
-          const badges= card.querySelector('.badges');
-          img.src = b.cover || defaultCover;
-          img.alt = `${b.title} cover`;
-          title.textContent = b.title;
-          auth.textContent  = b.author;
-          badges.replaceChildren(...((b.tags||[]).map(t=>{const s=document.createElement('span');s.className='badge';s.textContent=t;return s;})));
-          frag.appendChild(card);
-        });
-
-
-      list.replaceChildren(frag);
-
-      list.addEventListener('click', (e) => 
-        {
-          const card = e.target.closest('.card-book');
-          if (!card) 
-            return;
-          location.hash = `#/book?id=${encodeURIComponent(card.dataset.id)}`;
-        });
+      const data = await window.api.books.list();
+      return Array.isArray(data.items) ? data.items : [];
+    } catch 
+    { 
+      return []; 
     }
+  }
 
+  function render(arr)
+  {
+    const frag = document.createDocumentFragment();
+    arr.forEach(b =>
+    {
+      const card = tpl.content.firstElementChild.cloneNode(true);
+      card.dataset.id = b._id || b.id || '';
+      card.querySelector('.cover').src = b.cover || defaultCover;
+      card.querySelector('.cover').alt = `${b.title} cover`;
+      card.querySelector('.book-title').textContent  = b.title || '';
+      card.querySelector('.book-author').textContent = b.author || '';
+      const badges = card.querySelector('.badges');
+      badges.replaceChildren(...((b.tags||[]).map(t=>{const s=document.createElement('span');s.className='badge';s.textContent=t;return s;})));
+      frag.appendChild(card);
+    });
+    list.replaceChildren(frag);
+  }
+
+  render(await loadBooks());
+
+  list.addEventListener('click', (e) =>
+  {
+    const card = e.target.closest('.card-book');
+
+    if (!card) 
+      return;
+
+    
+    location.hash = `#/book?id=${encodeURIComponent(card.dataset.id)}`;
+  });
 
   const btn = document.getElementById('qBtn');
-  if (btn) 
-    btn.addEventListener('click', () => 
+  btn && btn.addEventListener('click', async () =>
   {
     const q = document.getElementById('q').value.trim();
-    if(!q) return;
-    alert('Search (demo): ' + q);
+    const data = await window.api.books.list({ q });
+    render(Array.isArray(data.items) ? data.items : []);
   });
 }

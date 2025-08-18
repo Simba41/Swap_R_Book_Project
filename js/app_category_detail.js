@@ -1,52 +1,46 @@
-import { demoBooks, defaultCover } from './demo-data.js';
-
-const norm = s => (s || '').toString().replace(/\s*-\s*/g, '-').trim().toLowerCase();
+// js/app_category_detail.js — **ИЗМЕНЕНО**: книги по жанру с API
+const defaultCover = 'images/placeholder.png';
 const getParam = n => (location.hash.match(new RegExp(`[?&]${n}=([^&]+)`))||[])[1] ? decodeURIComponent(RegExp.$1) : '';
 
-function unreadCount()
+export async function init()
 {
-  try
-  { 
-    return (JSON.parse(localStorage.getItem('notifications')||'[]')||[]).filter(n=>!n.read).length; 
-  }
-  catch
-  { 
-    return 0; 
-  }
-}
-
-export function init()
-{
-  const bell = document.getElementById('btnBell');
-  const heart = document.getElementById('btnHeart');
-  const badge = document.getElementById('bellBadge');
-  const c = unreadCount();
-  if (c>0){ badge.style.display='grid'; badge.textContent=String(c); }
-  bell.addEventListener('click', ()=> location.hash = '#/notifications');
-  heart.addEventListener('click',()=> location.hash = '#/likes');
-
   const genre = getParam('g') || '';
-  const gnorm = norm(genre);
-
   const titleEl   = document.getElementById('catName');
   const resultsEl = document.getElementById('catResults');
   const tplBook   = document.getElementById('tpl-book-card');
   const tplEmpty  = document.getElementById('tpl-empty');
 
-  titleEl.textContent = genre || 'All';
+  if (!resultsEl || !tplBook) 
+    return;
+
+
+  titleEl && (titleEl.textContent = genre || 'All');
+
+  async function load()
+  {
+    try 
+    {
+      const data = await window.api.books.list({ genre });
+      return Array.isArray(data.items) ? data.items : [];
+    } catch 
+    { 
+      return []; 
+    }
+  }
 
   function render(arr)
   {
-    if (!arr.length)
+    if (!arr.length) 
     {
-      resultsEl.replaceChildren(tplEmpty.content.firstElementChild.cloneNode(true));
+      if (tplEmpty) resultsEl.replaceChildren(tplEmpty.content.firstElementChild.cloneNode(true));
+      else resultsEl.innerHTML = '<div class="muted">No books yet.</div>';
       return;
     }
     const frag = document.createDocumentFragment();
-    arr.forEach(b => 
+    arr.forEach(b =>
     {
       const n = tplBook.content.firstElementChild.cloneNode(true);
-      n.dataset.id = b.id;
+      n.dataset.id = b._id || b.id || '';
       n.querySelector('.cover').src = b.cover || defaultCover;
       n.querySelector('.cover').alt = `${b.title} cover`;
       n.querySelector('.book-title').textContent = b.title;
@@ -58,25 +52,19 @@ export function init()
     resultsEl.replaceChildren(frag);
   }
 
-  const base = (demoBooks||[]).filter(b=>
-  {
-    if (!gnorm) return true;
-    if (b.genre && norm(b.genre)===gnorm) return true;
-    if (Array.isArray(b.tags) && b.tags.some(t=>norm(t)===gnorm)) return true;
-    return false;
-  });
-  render(base);
+  render(await load());
 
-  resultsEl.addEventListener('click', e=>
+  resultsEl.addEventListener('click', e =>
   {
     const card = e.target.closest('.card-book'); if(!card) return;
     location.hash = `#/book?id=${encodeURIComponent(card.dataset.id)}`;
   });
 
-  document.getElementById('dqBtn').addEventListener('click', ()=>
+  const dqBtn = document.getElementById('dqBtn');
+  dqBtn && dqBtn.addEventListener('click', async () =>
   {
-    const q = (document.getElementById('dq').value||'').trim().toLowerCase();
-    if (!q) return render(base);
-    render(base.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)));
+    const q = (document.getElementById('dq').value||'').trim();
+    const data = await window.api.books.list({ genre, q });
+    render(Array.isArray(data.items) ? data.items : []);
   });
 }

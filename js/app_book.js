@@ -1,49 +1,29 @@
-import { demoBooks, users, currentUser, defaultCover } from './demo-data.js';
+const defaultCover = 'images/placeholder.png';
+const getParam = name => 
+(location.hash.match(new RegExp(`[?&]${name}=([^&]+)`))||[])[1] ? decodeURIComponent(RegExp.$1) : '';
 
-function getHashParam(name)
+
+
+export async function init()
 {
-  const m = location.hash.match(new RegExp(`[?&]${name}=([^&]+)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-// (км)
-function distanceKm(a, b)
-{
-  const R = 6371;
-  const toRad = d => d * Math.PI / 180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const la1 = toRad(a.lat), la2 = toRad(b.lat);
-  const h = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-function getBook(id)
-{ 
-  return (demoBooks || []).find(b => b.id === id); 
-}
-
-function getUser(id)
-{ 
-  return (users || []).find(u => u.id === id) || { name:'User' }; 
-}
-
-function likeKey(id)
-{ 
-  return `like_${id}`; 
-}
-
-export function init()
-{
-  const id = getHashParam('id');
-  const book = getBook(id);
-  if (!book)
+  const id = getParam('id');
+  if (!id) 
   {
     document.getElementById('app').innerHTML = `<p class="muted">Book not found.</p>`;
-    return;
+      return;
   }
 
-  const owner = getUser(book.ownerId);
+  const book = await window.api.books.get(id).catch(()=>null);  
+
+  if (!book) 
+  {
+    document.getElementById('app').innerHTML = `<p class="muted">Book not found.</p>`;
+      return;
+  }
+
+
+  const ownerId = book.ownerId && (book.ownerId._id || book.ownerId) || '';
+  const owner   = ownerId ? await window.api.users.get(ownerId).catch(()=>null) : null; 
 
   const topAvatar = document.getElementById('bkOwnerAvatar');
   const topName   = document.getElementById('bkOwnerTopName');
@@ -51,30 +31,18 @@ export function init()
   const profileBtn= document.getElementById('ownerProfileBtn');
   const chatTop   = document.getElementById('chatBtnTop');
 
-  topName.textContent = owner.name || 'User';
+  topName && (topName.textContent = (owner && owner.name) || 'Owner');
 
+  if (topAvatar) topAvatar.innerHTML = (owner && owner.avatar)
+    ? `<img src="${owner.avatar}" alt="${owner.name}">`
+    : (owner && owner.name ? owner.name[0].toUpperCase() : '👤');
 
-  if (owner.avatar)
-  {
-    topAvatar.innerHTML = `<img src="${owner.avatar}" alt="${owner.name}">`;
-  } else 
-  {
-    topAvatar.innerHTML = owner.name ? owner.name[0].toUpperCase() : '👤';
-  }
+  topAvatar && topAvatar.addEventListener('click', (e)=>{ e.preventDefault?.(); if(ownerId) location.hash = `#/user?id=${ownerId}`; });
+  profileBtn && profileBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(ownerId) location.hash = `#/user?id=${ownerId}`; });
 
+  chatTop && chatTop.addEventListener('click', ()=> ownerId && (location.hash = `#/chat?with=${encodeURIComponent(ownerId)}&book=${encodeURIComponent(book._id || id)}`));
 
-  topAvatar.addEventListener('click', (e)=>{ e.preventDefault?.(); location.hash = `#/user?id=${owner.id}`; });
-  profileBtn.addEventListener('click', (e)=>{ e.preventDefault(); location.hash = `#/user?id=${owner.id}`; });
-  chatTop.addEventListener('click', ()=> location.hash = `#/chat?with=${encodeURIComponent(owner.id)}&book=${encodeURIComponent(book.id)}`);
-
-  if (owner.loc && currentUser.loc)
-  {
-    topDist.textContent = `${distanceKm(currentUser.loc, owner.loc).toFixed(1)} km from you`;
-  } else 
-  {
-    topDist.textContent = '';
-  }
-
+  topDist && (topDist.textContent = '');
 
   const cover  = document.getElementById('bkCover');
   const title  = document.getElementById('bkTitle');
@@ -84,46 +52,42 @@ export function init()
   const dist   = document.getElementById('bkDistance');
   const own    = document.getElementById('bkOwner');
 
-  cover.src = book.cover || defaultCover;
-  cover.alt = `${book.title} cover`;
-  title.textContent  = book.title;
-  author.textContent = book.author;
-  badges.innerHTML   = (book.tags || []).map(t => `<span class="badge">${t}</span>`).join('');
-  pickup.textContent = book.pickup || '—';
-  own.textContent    = owner.name;
-
-  if (owner.loc && currentUser.loc)
-  {
-    dist.textContent = `${distanceKm(currentUser.loc, owner.loc).toFixed(1)} km from you`;
-  } else 
-  {
-    dist.textContent = '';
-  }
-
+  if (cover)  { cover.src = book.cover || defaultCover; cover.alt = `${book.title} cover`; }
+  if (title)  title.textContent  = book.title || '';
+  if (author) author.textContent = book.author || '';
+  if (badges) badges.innerHTML   = (book.tags || []).map(t => `<span class="badge">${t}</span>`).join('');
+  if (pickup) pickup.textContent = book.pickup || '—';
+  if (own)    own.textContent    = (owner && owner.name) || 'Owner';
+  if (dist)   dist.textContent   = '';
 
   const likeBtn  = document.getElementById('likeBtn');
   const likeStat = document.getElementById('likeStat');
-  const liked = localStorage.getItem(likeKey(id)) === '1';
+  const likeKey  = (bookId)=>`like_${bookId}`;
+  const liked    = localStorage.getItem(likeKey(book._id || id)) === '1';
   renderLike(liked);
-  likeBtn.addEventListener('click', () => 
+
+  likeBtn && likeBtn.addEventListener('click', () =>
   {
-    const now = !(localStorage.getItem(likeKey(id)) === '1');
-    localStorage.setItem(likeKey(id), now ? '1' : '0');
+    const k = likeKey(book._id || id);
+    const now = !(localStorage.getItem(k) === '1');
+    localStorage.setItem(k, now ? '1' : '0');
     renderLike(now);
   });
 
-  
   function renderLike(state)
   {
+    if (!likeBtn || !likeStat) return;
     likeBtn.textContent = state ? '♥ Liked' : '♡ Like';
     likeBtn.classList.toggle('primary', state);
     likeStat.textContent = state ? 'Added to your likes.' : '';
   }
 
-
   const chatBtn = document.getElementById('chatBtn');
-  chatBtn.addEventListener('click', () => 
+  chatBtn && chatBtn.addEventListener('click', () =>
   {
-    location.hash = `#/chat?with=${encodeURIComponent(owner.id)}&book=${encodeURIComponent(book.id)}`;
+    if (!ownerId) 
+      return;
+    
+    location.hash = `#/chat?with=${encodeURIComponent(ownerId)}&book=${encodeURIComponent(book._id || id)}`;
   });
 }

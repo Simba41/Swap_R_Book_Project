@@ -1,58 +1,54 @@
-(() => {
-  const form = document.getElementById('loginForm');
-  const btn  = document.getElementById('submitBtn');
-  const msg  = document.getElementById('formMsg');
-
-  const apiURL = '/api/auth/login'; 
-
-  function setMsg(text, type = '') 
+(() => 
   {
-    msg.textContent = text || '';
-    msg.className = `msg ${type}`;
-  }
+    const form = document.getElementById('loginForm');
+    const btn  = document.getElementById('submitBtn') || form.querySelector('button[type="submit"]');
+    const msg  = document.getElementById('formMsg');
 
-  function validEmail(v) 
-  {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  }
-
-  form.addEventListener('submit', async (e) => 
+    function setMsg(text, type = '')
     {
-        e.preventDefault();
-        setMsg('');
 
-        const data = Object.fromEntries(new FormData(form).entries());
-        const { email, password } = data;
+      if (!msg)
+        return;
 
-        if (!validEmail(email))               return setMsg('Please enter a valid email.', 'error');
-        if (!password || password.length < 8) return setMsg('Password must be at least 8 characters.', 'error');
 
-        btn.disabled = true;
+      msg.textContent = text || '';
+      msg.className = `msg ${type}`;
+    }
 
-        try 
-        {
-            const res = await fetch(apiURL, 
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+    function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
-            if (!res.ok) 
-            {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.message || 'Sign in failed');
-            }
+    form.addEventListener('submit', async (e) =>
+    {
+      e.preventDefault();
+      setMsg('');
 
-            setMsg('Welcome back! Redirecting…', 'success');
-      
-            setTimeout(() => (window.location.href = 'browse.html'), 700);
-        } catch (error) 
-        {
-            setMsg(error.message, 'error');
-        } finally 
-        {
-            btn.disabled = false;
-        }
+      const data = Object.fromEntries(new FormData(form).entries());
+      const { email, password } = data;
+
+      if (!validEmail(email))               
+        return setMsg('Please enter a valid email.', 'error');  
+
+
+      if (!password || password.length < 8) 
+        return setMsg('Password must be at least 8 characters.', 'error');
+
+
+      btn && (btn.disabled = true);
+
+      try 
+      {
+        const { token, user } = await window.api.login(email, password);   
+        window.setToken(token);                                            
+        setMsg(`Welcome back, ${user.firstName}! Redirecting…`, 'success');
+        setTimeout(() => (window.location.href = 'app.html#/home'), 700);  
+      }
+      catch (error) 
+      { 
+        setMsg(error.message, 'error'); 
+      }
+      finally 
+      { 
+        btn && (btn.disabled = false); 
+      }
   });
 })();
