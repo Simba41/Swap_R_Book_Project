@@ -1,0 +1,30 @@
+<h1 class="h1">Books in “<span id="catName"></span>”</h1>
+
+<div class="page-tools">
+  <button class="icon-btn" id="btnBell" title="Notifications">🔔<span class="badge" id="bellBadge" style="display:none">0</span></button>
+  <button class="icon-btn" id="btnHeart" title="Likes">❤</button>
+</div>
+
+
+<div class="search search--sticky">
+  <img src="images/search.png" alt="Search" class="search-icon">
+  <input id="dq" type="search" placeholder="Search in this category..." />
+  <button id="dqBtn" type="button">Search</button>
+</div>
+
+<div class="list" id="catResults"></div>
+
+<template id="tpl-book-card">
+  <article class="card-book" data-id="">
+    <img class="cover" src="" alt="">
+    <div>
+      <h3 class="book-title"></h3>
+      <div class="book-author"></div>
+      <div class="badges"></div>
+    </div>
+  </article>
+</template>
+
+<template id="tpl-empty">
+  <div class="muted">No books yet in this category.</div>
+</template>

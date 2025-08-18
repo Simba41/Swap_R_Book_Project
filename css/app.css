@@ -613,3 +613,45 @@ body
   align-items:center;
   gap:10px 
 }
+
+
+.category-list
+{
+  display:flex;
+  flex-direction:column;
+  gap:12px
+}
+
+
+.category-card
+{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  border-radius:14px;
+  border:2px solid #6f7f90;
+  background:#EAF3FF;
+  color:#0a2b59;
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+  appearance:none;
+  outline:none;
+  text-align:left
+}
+.category-arrow
+{
+  opacity:.7;
+  font-size:18px;
+  line-height:1
+}
+
+
+.category-card.active
+{
+  background:#c8daf4;
+  border-color:#1B497D;
+  color:#0a2b59
+}
