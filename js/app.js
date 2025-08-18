@@ -13,6 +13,11 @@ const routes =
 
   '/likes':       { view: 'app_likes.html',           module: () => import('./app_likes.js') },
   '/notifications':{ view:'app_notifications.html',   module: () => import('./app_notifications.js') },
+
+  '/upload':      { view: 'app_upload.html',          module: () => import('./app_upload.js') },
+  '/my':          { view: 'app_mybooks.html',         module: () => import('./app_mybooks.js') },
+  '/profile':     { view: 'app_profile.html',         module: () => import('./app_profile.js') },
+  '/user':        { view: 'app_user.html',            module: () => import('./app_user.js') }
 };
 
 async function loadHTML(fileName)

@@ -1,0 +1,60 @@
+<h1 class="h1">Upload</h1>
+
+<div class="stepper" id="stepper"></div>
+
+<div id="stepWrap"></div>
+
+<div class="row">
+  <button class="btn" id="backBtn">Back</button>
+  <button class="btn primary" id="nextBtn">Continue</button>
+</div>
+
+<template id="step1">
+  <section class="card soft">
+    <div><b>1. Book name</b></div>
+
+    <input class="input" id="upTitle" placeholder="Type name of book" />
+
+    <div style="margin-top:12px"><b>2. Author</b></div>
+
+    <input class="input" id="upAuthor" placeholder="Type author of book" />
+
+    <div style="margin-top:12px"><b>3. Review</b></div>
+
+    <textarea class="textarea" id="upReview" rows="4" placeholder="Type a little review."></textarea>
+
+    <div style="margin-top:12px"><b>4. Image</b></div>
+
+    <input type="file" id="upImage" accept="image/*" />
+    
+  </section>
+</template>
+
+
+<template id="step2">
+  <section class="card soft">
+    <div><b>Choose category of your book</b></div>
+    <div class="list" id="upCats"></div>
+  </section>
+</template>
+
+<template id="step3">
+  <section class="card soft">
+    <div><b>Which book you will like to put in category?</b></div>
+    <div class="list" id="upConfirmCat"></div>
+  </section>
+</template>
+
+<template id="step4">
+  <section class="card soft">
+    <div><b>Pickup location</b></div>
+    <div style="margin:8px 0">
+      <button class="btn" id="useGeo">Use current device location</button>
+    </div>
+    <input class="input" id="upCountry" placeholder="Country" style="margin-top:8px"/>
+    <input class="input" id="upState" placeholder="State" style="margin-top:8px"/>
+    <input class="input" id="upCity" placeholder="City" style="margin-top:8px"/>
+    <input class="input" id="upStreet" placeholder="Street" style="margin-top:8px"/>
+  </section>
+</template>
+
