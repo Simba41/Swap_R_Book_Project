@@ -26,6 +26,43 @@ function renderStepper(cur)
     .join('');
 }
 
+
+
+async function compressImage(file, maxSide = 1200, quality = 0.82) 
+{
+  return new Promise((resolve, reject) => 
+  {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => 
+    {
+      const img = new Image();
+      img.onload = () => 
+      {
+        let { width: w, height: h } = img;
+        const ratio = Math.max(w, h) / maxSide;
+
+        if (ratio > 1) 
+        { 
+          w = Math.round(w / ratio);
+          h = Math.round(h / ratio); 
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const data = canvas.toDataURL('image/jpeg', quality);
+        resolve(data);
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function mountStep(idx) 
 {
   const host = document.getElementById('stepWrap');
@@ -49,16 +86,23 @@ function mountStep(idx)
     if (review) review.value = state.review || '';
     if (imgPrev && state.imageData) imgPrev.src = state.imageData;
 
-    imgInp && imgInp.addEventListener('change', e => 
+    imgInp && imgInp.addEventListener('change', async (e) => 
     {
-      const f = e.target.files?.[0]; 
+      const f = e.target.files?.[0];
 
       if (!f) 
         return;
 
-      const r = new FileReader();
-      r.onload = () => { state.imageData = r.result; imgPrev && (imgPrev.src = r.result); };
-      r.readAsDataURL(f);
+      try 
+      {
+        state.imageData = await compressImage(f);   
+
+        if (imgPrev) imgPrev.src = state.imageData;
+
+      } catch (err) 
+      {
+        console.warn('compress failed', err);
+      }
     });
 
     autoBtn && autoBtn.addEventListener('click', async () => 
@@ -102,20 +146,26 @@ function mountStep(idx)
 
     const cats = Array.isArray(CATEGORIES) ? CATEGORIES : [];
     list.innerHTML = cats.map(c => `
-      <button type="button" class="tile${state.category===c?' active':''}" data-c="${c}">
+      <button type="button" class="tile${state.category===c?' active':''}" data-c="${c}" aria-pressed="${state.category===c?'true':'false'}">
         <span>${c}</span><span>${state.category===c?'✓':'○'}</span>
       </button>
     `).join('');
-    list.addEventListener('click', e => 
-    {
-      const t = e.target.closest('.tile'); 
 
-      if (!t) 
-        return;
 
+    list.addEventListener('click', (e) => {
+      const t = e.target.closest('button.tile'); if (!t) return;
       state.category = t.dataset.c;
-      [...list.children].forEach(n => n.classList.toggle('active', n===t));
+      [...list.children].forEach(n => {
+        const on = (n === t);
+        n.classList.toggle('active', on);
+        n.setAttribute('aria-pressed', on ? 'true' : 'false');
+        const marks = n.querySelectorAll('span'); if (marks[1]) marks[1].textContent = on ? '✓' : '○';
+      });
+      btnNext?.removeAttribute('disabled');         // **ADDED**: разрешаем продолжить
     });
+
+    // **ADDED**: если ещё не выбрано — блокируем Continue
+    if (!state.category && btnNext) btnNext.setAttribute('disabled', 'disabled');
   }
 
   if (idx === 2) 
