@@ -19,6 +19,7 @@ export async function init()
   const bell  = document.getElementById('btnBell');
   const heart = document.getElementById('btnHeart');
   const badge = document.getElementById('bellBadge');
+  const msgs  = document.getElementById('btnMsgs'); 
   try 
   {
     const c = (JSON.parse(localStorage.getItem('notifications')||'[]')||[]).filter(n=>!n.read).length;
