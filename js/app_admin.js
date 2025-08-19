@@ -1,17 +1,17 @@
 export async function init()
 {
-  try 
+  try
   {
     const m = await window.api.admin.metrics();
     document.getElementById('metrics').textContent =
       `USERS: ${m.users}  BOOKS: ${m.books}  MSGS: ${m.messages}  NOTIFS: ${m.notifications}`;
-  } catch 
+  }
+  catch
   {
     document.getElementById('metrics').textContent = 'metrics error';
   }
 
   const feed = document.getElementById('adminFeed');
-
 
   async function listUsers()
   {
@@ -46,20 +46,20 @@ export async function init()
     html += `</tbody></table>`;
     feed.innerHTML = html;
 
-    feed.querySelectorAll('button[data-act]').forEach(btn=>
+    feed.querySelectorAll('button[data-act]').forEach(btn =>
     {
-      btn.addEventListener('click', async ()=>
+      btn.addEventListener('click', async () =>
       {
         const id  = btn.dataset.id;
         const act = btn.dataset.act;
 
         if (act === 'ban') await window.api.admin.ban(id);
         else               await window.api.admin.unban(id);
+
         await listUsers();
       });
     });
   }
-
 
   async function listBooks()
   {
@@ -90,17 +90,16 @@ export async function init()
     html += `</tbody></table>`;
     feed.innerHTML = html;
 
-    feed.querySelectorAll('button[data-del]').forEach(btn=>
+    feed.querySelectorAll('button[data-del]').forEach(btn =>
     {
-      btn.addEventListener('click', async ()=>{
+      btn.addEventListener('click', async () =>
+      {
         await window.api.books.remove(btn.dataset.del);
         await listBooks();
       });
     });
   }
 
-
-  
   async function listReports()
   {
     const data = await window.api.admin.reports({ limit:50, page:1 });
@@ -127,20 +126,18 @@ export async function init()
         <td><button data-res="${r._id}" class="btn small">Resolve</button></td>
       </tr>`;
     }
-
     html += `</tbody></table>`;
     feed.innerHTML = html;
 
-    feed.querySelectorAll('button[data-res]').forEach(btn=>
+    feed.querySelectorAll('button[data-res]').forEach(btn =>
     {
-      btn.addEventListener('click', async ()=>{
+      btn.addEventListener('click', async () =>
+      {
         await window.api.admin.resolveReport(btn.dataset.res);
         await listReports();
       });
     });
   }
-
-
 
   async function listChanges()
   {
@@ -170,15 +167,13 @@ export async function init()
     feed.innerHTML = html;
   }
 
-
-
-
   function fmtUser(u)
   {
+
     if (!u) 
       return '-';
 
-    if (typeof u==='string')
+    if (typeof u === 'string') 
       return u;
 
     const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
@@ -197,21 +192,19 @@ export async function init()
     }
 
     let html = `<h2>Conversations</h2><ul class="chat-list">`;
-
     for (const c of data.items)
-      {
+    {
       html += `<li data-conv="${c.conv}" class="chat-item">
         <b>${fmtUser(c.from)}</b> ↔ <b>${fmtUser(c.to)}</b><br>
         ${new Date(c.updatedAt).toLocaleString()} — ${c.lastText}
       </li>`;
     }
-
     html += `</ul>`;
     feed.innerHTML = html;
 
-    feed.querySelectorAll('.chat-item').forEach(li=>
+    feed.querySelectorAll('.chat-item').forEach(li =>
     {
-      li.addEventListener('click', ()=> showConversation(li.dataset.conv));
+      li.addEventListener('click', () => showConversation(li.dataset.conv));
     });
   }
 
@@ -245,8 +238,6 @@ export async function init()
 
     document.getElementById('backToConvs').addEventListener('click', listConversations);
   }
-
-
 
   document.getElementById('uSearch').addEventListener('click', listUsers);
   document.getElementById('bSearch').addEventListener('click', listBooks);
