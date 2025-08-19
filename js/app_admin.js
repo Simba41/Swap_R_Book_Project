@@ -12,6 +12,7 @@ export async function init()
 
   const feed = document.getElementById('adminFeed');
 
+
   async function listUsers()
   {
     const q = document.getElementById('uq').value || '';
@@ -47,17 +48,18 @@ export async function init()
 
     feed.querySelectorAll('button[data-act]').forEach(btn=>
     {
-      btn.addEventListener('click', async ()=>{
+      btn.addEventListener('click', async ()=>
+      {
         const id  = btn.dataset.id;
         const act = btn.dataset.act;
 
         if (act === 'ban') await window.api.admin.ban(id);
         else               await window.api.admin.unban(id);
-
         await listUsers();
       });
     });
   }
+
 
   async function listBooks()
   {
@@ -90,14 +92,15 @@ export async function init()
 
     feed.querySelectorAll('button[data-del]').forEach(btn=>
     {
-      btn.addEventListener('click', async ()=>
-      {
+      btn.addEventListener('click', async ()=>{
         await window.api.books.remove(btn.dataset.del);
         await listBooks();
       });
     });
   }
 
+
+  
   async function listReports()
   {
     const data = await window.api.admin.reports({ limit:50, page:1 });
@@ -124,18 +127,20 @@ export async function init()
         <td><button data-res="${r._id}" class="btn small">Resolve</button></td>
       </tr>`;
     }
+
     html += `</tbody></table>`;
     feed.innerHTML = html;
 
     feed.querySelectorAll('button[data-res]').forEach(btn=>
     {
-      btn.addEventListener('click', async ()=>
-      {
+      btn.addEventListener('click', async ()=>{
         await window.api.admin.resolveReport(btn.dataset.res);
         await listReports();
       });
     });
   }
+
+
 
   async function listChanges()
   {
@@ -165,37 +170,62 @@ export async function init()
     feed.innerHTML = html;
   }
 
-  let msgPage = 1;
-  const msgLimit = 50;
+
+
 
   function fmtUser(u)
   {
     if (!u) 
       return '-';
 
-    if (typeof u === 'string') 
-      return u; 
+    if (typeof u==='string')
+      return u;
 
     const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
 
     return name || u.email || (u._id || '-');
   }
 
-  async function listMessages()
+  async function listConversations()
   {
-    const data = await window.api.admin.messages({ page: msgPage, limit: msgLimit });
+    const data = await window.api.admin.conversations();
 
-    if (!data.items || !data.items.length)
+    if (!data.items.length)
     {
-      feed.innerHTML = '<p class="muted">No messages</p>';
+      feed.innerHTML = '<p class="muted">No conversations</p>';
       return;
     }
 
-    let html = `<div class="row" style="margin-bottom:12px">
-      <input id="mq" class="input" placeholder="Search in messages..."/>
-      <button id="mGo" class="btn">Search</button>
-    </div>`;
+    let html = `<h2>Conversations</h2><ul class="chat-list">`;
 
+    for (const c of data.items)
+      {
+      html += `<li data-conv="${c.conv}" class="chat-item">
+        <b>${fmtUser(c.from)}</b> ↔ <b>${fmtUser(c.to)}</b><br>
+        ${new Date(c.updatedAt).toLocaleString()} — ${c.lastText}
+      </li>`;
+    }
+
+    html += `</ul>`;
+    feed.innerHTML = html;
+
+    feed.querySelectorAll('.chat-item').forEach(li=>
+    {
+      li.addEventListener('click', ()=> showConversation(li.dataset.conv));
+    });
+  }
+
+  async function showConversation(convId)
+  {
+    const data = await window.api.admin.messages({ conv: convId });
+
+    if (!data.items.length)
+    {
+      feed.innerHTML = '<p class="muted">No messages in this conversation</p>';
+      return;
+    }
+
+    let html = `<button id="backToConvs" class="btn">← Back</button>`;
     html += `<table class="admin-table"><thead>
       <tr><th>Date</th><th>From</th><th>To</th><th>Text</th></tr>
     </thead><tbody>`;
@@ -211,51 +241,9 @@ export async function init()
     }
 
     html += `</tbody></table>`;
-
-    html += `<div class="pager" style="margin-top:12px;display:flex;gap:8px;align-items:center">
-      <button id="mPrev" class="btn" ${data.page<=1?'disabled':''}>Prev</button>
-      <span>Page ${data.page} / ${data.pages||1}</span>
-      <button id="mNext" class="btn" ${data.page>=data.pages?'disabled':''}>Next</button>
-    </div>`;
-
     feed.innerHTML = html;
 
-
-    feed.querySelector('#mPrev')?.addEventListener('click', async ()=>
-    {
-      if (msgPage > 1) 
-      { 
-        msgPage--; 
-        await listMessages(); 
-      }
-    });
-    feed.querySelector('#mNext')?.addEventListener('click', async ()=>
-    {
-      if (!data.pages || msgPage < data.pages) 
-      { 
-        msgPage++; 
-        await listMessages(); 
-      }
-    });
-    feed.querySelector('#mGo')?.addEventListener('click', async ()=>
-    {
-      const q = (feed.querySelector('#mq')?.value || '').trim();
-      msgPage = 1;
-      const res = await window.api.admin.messages({ page: msgPage, limit: msgLimit, q });
-
-      if (!res.items || !res.items.length)
-      {
-        feed.innerHTML = '<p class="muted">No messages</p>';
-        return;
-      }
-
-
-      const backup = { items: res.items, page: res.page, pages: res.pages };
-
-
-      feed.innerHTML = '';
-      await listMessages();
-    });
+    document.getElementById('backToConvs').addEventListener('click', listConversations);
   }
 
 
@@ -266,14 +254,13 @@ export async function init()
   document.getElementById('showChanges').addEventListener('click', listChanges);
 
   const ctrl = document.querySelector('.admin-controls');
-  
   if (ctrl && !ctrl.querySelector('#btnMsgsAdmin'))
   {
     const btnMsgs = document.createElement('button');
     btnMsgs.id = 'btnMsgsAdmin';
     btnMsgs.className = 'btn';
     btnMsgs.textContent = 'Messages';
-    btnMsgs.addEventListener('click', listMessages);
+    btnMsgs.addEventListener('click', listConversations);
     ctrl.appendChild(btnMsgs);
   }
 }
