@@ -1,83 +1,55 @@
-
-function qs(id)
-{ 
-  return document.getElementById(id); 
-}
-
-function setBusy(busy)
-{
-  const btn = qs('btnLogin');
-  btn.disabled = !!busy;
-  btn.textContent = busy ? 'Signing in…' : 'Sign in';
-}
-
-function showMsg(text, danger=false)
-{
-  const el = qs('msg');
-  el.textContent = text || '';
-  el.style.color = danger ? '#b00020' : 'var(--muted,#6B7280)';
-}
-
-function validate()
-{
-  const ok = (qs('email').value.trim() !== '' && qs('pass').value.trim() !== '');
-  qs('btnLogin').disabled = !ok;
-}
-
-async function doLogin()
-{
-  const email = qs('email').value.trim();
-  const pass  = qs('pass').value.trim();
-
-  if (!email || !pass) 
-    return;
-
-  setBusy(true); showMsg('');
-  try
+(() => 
   {
-    const res = await window.api.login(email, pass);
+    const form = document.getElementById('loginForm');
+    const btn  = document.getElementById('submitBtn') || form.querySelector('button[type="submit"]');
+    const msg  = document.getElementById('formMsg');
 
-    if (!res || !res.token) 
-      throw new Error('No token');
-
-    window.setToken(res.token);
-    location.href = 'app.html#/home';
-
-  }catch(e)
-  {
-    const msg = (e && e.message) || '';
-    if (/banned/i.test(msg))      showMsg('Your account is banned.', true);
-    else if (/401|credentials|invalid/i.test(msg)) showMsg('Invalid email or password.', true);
-    else                          showMsg('Failed: ' + msg, true);
-    setBusy(false);
-  }
-}
-
-export function init(){}
-
-
-document.addEventListener('DOMContentLoaded', ()=>
-{
-  const email = qs('email');
-  const pass  = qs('pass');
-  const btn   = qs('btnLogin');
-
-  email.addEventListener('input', validate);
-  pass.addEventListener('input',  validate);
-
-  // на Enter — логин
-  [email, pass].forEach(inp => inp.addEventListener('keydown', (e)=>
-  {
-    if (e.key === 'Enter' && !btn.disabled) doLogin();
-  }));
-
-  btn.addEventListener('click', doLogin);
-
-  try
-  {
-    if (window.getToken && window.getToken())
+    function setMsg(text, type = '')
     {
-      location.href = 'app.html#/home';
+
+      if (!msg)
+        return;
+
+
+      msg.textContent = text || '';
+      msg.className = `msg ${type}`;
     }
-  }catch{}
-});
+
+    function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+    form.addEventListener('submit', async (e) =>
+    {
+      e.preventDefault();
+      setMsg('');
+
+      const data = Object.fromEntries(new FormData(form).entries());
+      const { email, password } = data;
+
+      if (!validEmail(email))               
+        return setMsg('Please enter a valid email.', 'error');  
+
+
+      if (!password || password.length < 8) 
+        return setMsg('Password must be at least 8 characters.', 'error');
+
+
+      btn && (btn.disabled = true);
+
+      try 
+      {
+        const { token, user } = await window.api.login(email, password);
+        window.setToken(token);
+        setMsg(`Welcome back, ${user.firstName}! Redirecting…`, 'success');
+
+        location.replace('app.html'); 
+        return;
+
+      } catch (error) 
+      {
+        setMsg(error.message, 'error');
+      } finally 
+      {
+        btn && (btn.disabled = false);
+      }
+  });
+})();
