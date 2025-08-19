@@ -15,6 +15,9 @@ export async function init()
 
   const file = document.getElementById('profFile');
   const img  = document.getElementById('profImg');
+  
+  const adminTile = document.getElementById('adminTile'); 
+  if (adminTile) adminTile.style.display = (me?.role === 'admin') ? '' : 'none';
 
   document.getElementById('profPlus').addEventListener('click', ()=> file.click());
   file.addEventListener('change', e =>

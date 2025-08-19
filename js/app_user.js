@@ -37,6 +37,14 @@ export async function init()
   }
 
   document.getElementById('uName').textContent = user.name || [user.firstName, user.lastName].filter(Boolean).join(' ') || 'User';
+  const whereEl = document.getElementById('uWhere'); 
+  if (whereEl) 
+  { 
+    if (user.loc && typeof user.loc.lat==='number' && typeof user.loc.lng==='number') 
+      whereEl.textContent = `Location: ${user.loc.lat.toFixed(4)}, ${user.loc.lng.toFixed(4)}`;
+    else whereEl.textContent = 'Location: —'; 
+  } 
+  
   document.getElementById('uBio').textContent  = user.bio || '';
 
   if (user.loc && me?.loc && user.loc.lat && me.loc.lat)

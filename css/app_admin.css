@@ -1,0 +1,36 @@
+.admin-metrics 
+{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background:#0b0f14;
+  color:#9fef00;
+}
+
+.admin-panel 
+{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background:#0b0f14;
+  color:#d1e4ff;
+}
+
+.admin-controls 
+{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.admin-controls .input 
+{
+  max-width:260px;
+  background:#071117;
+  color:#d1e4ff;
+  border-color:#24425c;
+}
+
+#adminFeed 
+{
+  white-space:pre-wrap;
+  margin-top:8px;
+  max-height:48vh;
+  overflow:auto;
+}

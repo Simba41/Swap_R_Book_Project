@@ -57,7 +57,9 @@ window.api =
 
   users: 
   { 
-    get: (id) => apiFetch(`/api/users/${id}`, { method:'GET' }) 
+    get: (id) => apiFetch(`/api/users/${id}`, { method:'GET' }),
+    update: (payload) => apiFetch('/api/users/me', { method:'PUT', auth:true, body: payload }), 
+    password: ({ currentPassword, newPassword }) => apiFetch('/api/users/me/password', { method:'PUT', auth:true, body:{ currentPassword, newPassword } })
   },
 
   books: 
@@ -81,6 +83,7 @@ window.api =
     read: (id) => apiFetch(`/api/notifications/${id}/read`, { method:'POST', auth:true }),
   },
 
+  reports: { create: (payload) => apiFetch('/api/reports', { method:'POST', body: payload }) }, 
 
   admin: 
   {
@@ -91,5 +94,8 @@ window.api =
     books:   (params={}) => apiFetch('/api/admin/books' + buildQuery(params), { auth:true }),
     messages:(params={}) => apiFetch('/api/admin/messages' + buildQuery(params), { auth:true }),
     notify:  (payload) => apiFetch('/api/admin/notify', { method:'POST', auth:true, body: payload }),
+    reports: (params={}) => apiFetch('/api/admin/reports' + buildQuery(params), { auth:true }),
+    resolveReport: (id) => apiFetch(`/api/admin/reports/${id}/resolve`, { method:'PUT', auth:true }), 
+    changes: (params={}) => apiFetch('/api/admin/changes' + buildQuery(params), { auth:true })
   },
 };

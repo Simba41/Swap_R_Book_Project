@@ -88,7 +88,11 @@ body
 { 
     display:flex;
     flex-wrap:wrap;
-    gap:8px 
+    gap:8px; 
+    overflow-x: auto;
+    white-space:nowrap; 
+    -webkit-overflow-scrolling: touch; 
+    scroll-snap-type: x proximity; 
 }
 
 
@@ -100,6 +104,8 @@ body
     border-radius:20px;
     font-size:12px;
     font-weight:600;
+    display:inline-block; 
+    scroll-snap-align: start; 
 }
 
 

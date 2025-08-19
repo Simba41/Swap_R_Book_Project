@@ -79,6 +79,6 @@ export async function init()
     if (!card || !card.dataset.id) 
       return;
     
-    location.hash = `#/book?id=${encodeURIComponent(card.dataset.id)}`;
+    location.hash = `#/book?id=${encodeURIComponent(card.dataset.id)}&from=my`;
   });
 }

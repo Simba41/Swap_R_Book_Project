@@ -27,6 +27,7 @@ export async function init()
   
   bell && bell.addEventListener('click', ()=> location.hash = '#/notifications');
   heart && heart.addEventListener('click',()=> location.hash = '#/likes');
+  msgs && msgs.addEventListener('click', ()=> location.hash = '#/messages');
 
   const chips = document.getElementById('chips');
 

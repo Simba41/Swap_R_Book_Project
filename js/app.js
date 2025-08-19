@@ -3,21 +3,28 @@ const tabs = document.querySelectorAll('.tabbar .tab');
 
 const routes =
 {
-  '/home':        { view: 'app_home.html',            module: () => import('./app_home.js') },
-  '/categories':  { view: 'app_category.html',        module: () => import('./app_category.js') },
-  '/category':    { view: 'app_category_detail.html', module: () => import('./app_category_detail.js') },
-  '/book':        { view: 'app_book.html',            module: () => import('./app_book.js') },
+  '/home':              { view: 'app_home.html',              module: () => import('./app_home.js') },
+  '/categories':        { view: 'app_category.html',          module: () => import('./app_category.js') },
+  '/category':          { view: 'app_category_detail.html',   module: () => import('./app_category_detail.js') },
+  '/book':              { view: 'app_book.html',              module: () => import('./app_book.js') },
 
-  '/chat':        { view: 'app_chat.html',            module: () => import('./app_chat.js') },
-  '/report':      { view: 'app_report.html',          module: () => import('./app_report.js') },
+  '/chat':              { view: 'app_chat.html',              module: () => import('./app_chat.js') },
+  '/report':            { view: 'app_report.html',            module: () => import('./app_report.js') },
 
-  '/likes':       { view: 'app_likes.html',           module: () => import('./app_likes.js') },
-  '/notifications':{ view:'app_notifications.html',   module: () => import('./app_notifications.js') },
+  '/likes':             { view: 'app_likes.html',             module: () => import('./app_likes.js') },
+  '/notifications':     { view:'app_notifications.html',      module: () => import('./app_notifications.js') },
 
-  '/upload':      { view: 'app_upload.html',          module: () => import('./app_upload.js') },
-  '/my':          { view: 'app_mybooks.html',         module: () => import('./app_mybooks.js') },
-  '/profile':     { view: 'app_profile.html',         module: () => import('./app_profile.js') },
-  '/user':        { view: 'app_user.html',            module: () => import('./app_user.js') }
+  '/upload':            { view: 'app_upload.html',            module: () => import('./app_upload.js') },
+  '/my':                { view: 'app_mybooks.html',           module: () => import('./app_mybooks.js') },
+  '/profile':           { view: 'app_profile.html',           module: () => import('./app_profile.js') },
+  '/user':              { view: 'app_user.html',              module: () => import('./app_user.js') },
+  '/messages':          { view: 'app_messages.html',          module: () => import('./app_messages.js') }, 
+  '/settings':          { view: 'app_settings.html',          module: () => import('./app_settings.js') }, 
+  '/settings/name':     { view: 'app_settings_name.html',     module: () => import('./app_settings_name.js') }, 
+  '/settings/email':    { view: 'app_settings_email.html',    module: () => import('./app_settings_email.js') },
+  '/settings/password': { view: 'app_settings_password.html', module: () => import('./app_settings_password.js') }, 
+  '/settings/location': { view: 'app_settings_location.html', module: () => import('./app_settings_location.js') }, 
+  '/admin':             { view: 'app_admin.html',             module: () => import('./app_admin.js') }
 };
 
 async function loadHTML(fileName)

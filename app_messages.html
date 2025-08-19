@@ -1,0 +1,19 @@
+<h1 class="h1">Messages</h1>
+
+<div class="list" id="msgList"></div>
+
+<template id="tpl-conv">
+  <article class="card soft" data-with="" data-book="">
+    <div style="display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:center">
+      <div class="avatar sm"><span>💬</span></div>
+      <div>
+        <div><b class="conv-title"></b></div>
+        <div class="muted conv-sub"></div>
+      </div>
+    </div>
+  </article>
+</template>
+
+<template id="tpl-empty">
+  <div class="muted">No conversations yet.</div>
+</template>
