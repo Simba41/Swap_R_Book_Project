@@ -152,19 +152,25 @@ function mountStep(idx)
     `).join('');
 
 
-    list.addEventListener('click', (e) => {
-      const t = e.target.closest('button.tile'); if (!t) return;
+    list.addEventListener('click', (e) => 
+    {
+      const t = e.target.closest('button.tile'); 
+    
+      if (!t) 
+        return;
+
       state.category = t.dataset.c;
-      [...list.children].forEach(n => {
+      [...list.children].forEach(n => 
+      {
         const on = (n === t);
         n.classList.toggle('active', on);
         n.setAttribute('aria-pressed', on ? 'true' : 'false');
-        const marks = n.querySelectorAll('span'); if (marks[1]) marks[1].textContent = on ? '✓' : '○';
+        const marks = n.querySelectorAll('span'); 
+        if (marks[1]) marks[1].textContent = on ? '✓' : '○';
       });
-      btnNext?.removeAttribute('disabled');         // **ADDED**: разрешаем продолжить
+      btnNext?.removeAttribute('disabled');       
     });
 
-    // **ADDED**: если ещё не выбрано — блокируем Continue
     if (!state.category && btnNext) btnNext.setAttribute('disabled', 'disabled');
   }
 
