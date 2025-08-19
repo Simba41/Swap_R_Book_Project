@@ -1,5 +1,3 @@
-
-
 function getHashParam(name)
 {
   const m = location.hash.match(new RegExp(`[?&]${name}=([^&]+)`));
@@ -11,21 +9,10 @@ function displayName(u)
   return u?.name || [u?.firstName, u?.lastName].filter(Boolean).join(' ') || 'User';
 }
 
-function convKey(withId, bookId) 
-{ 
-  return `conv_${withId}_${bookId}`; 
-}
-
-
-function swapKey(withId, bookId) 
-{ 
-  return `swap_${withId}_${bookId}`; 
-}
-
 export async function init()
 {
   const withId = getHashParam('with');
-  const bookId = getHashParam('book');
+  const bookId = getHashParam('book') || null;
 
   let me = null;
   try 
@@ -49,63 +36,66 @@ export async function init()
   if (buddy?.avatar)
     avatar.innerHTML = `<img src="${buddy.avatar}" alt="${displayName(buddy)}">`;
   else
-    avatar.innerHTML = displayName(buddy).slice(0,1).toUpperCase() || '👤';
+    avatar.innerHTML = (displayName(buddy).slice(0,1).toUpperCase()) || '👤';
 
-  const openProfile = (e)=>
-  { 
-      e.preventDefault?.(); 
-      if (withId) location.hash = `#/user?id=${encodeURIComponent(withId)}`;
-  };
-
+  const openProfile = (e)=>{ e.preventDefault?.(); if (withId) location.hash = `#/user?id=${encodeURIComponent(withId)}`; };
   avatar.addEventListener('click', openProfile);
   openProfileBtn.addEventListener('click', openProfile);
 
   const feed = document.getElementById('chatFeed');
   const text = document.getElementById('chatText');
+  const sendBtn = document.getElementById('sendBtn');
 
-  function loadConv()
+  async function loadHistory()
   {
     try 
-    { 
-      return JSON.parse(localStorage.getItem(convKey(withId, bookId)) || '[]'); 
+    {
+      const res = await window.api.messages.list(withId, bookId); 
+      return res.items || [];
+    } catch (e) 
+    {
+      console.error(e);
+      return [];
     }
-    catch 
-    { 
-      return []; 
-    }
-  }
-  function saveConv(arr) 
-  { 
-    localStorage.setItem(convKey(withId, bookId), JSON.stringify(arr)); 
   }
 
-  function renderConv()
+  function render(items)
   {
-    const arr = loadConv();
-    feed.innerHTML = arr.map(msg => `
-      <div class="msg ${msg.from === myId ? 'me' : 'them'}">
+    feed.innerHTML = items.map(msg => `
+      <div class="msg ${String(msg.from) === String(myId) ? 'me' : 'them'}">
         <div class="bubble">${msg.text}</div>
-        <div class="time muted">${new Date(msg.ts).toLocaleTimeString()}</div>
+        <div class="time muted">${new Date(msg.createdAt || Date.now()).toLocaleTimeString()}</div>
       </div>
     `).join('');
     feed.scrollTop = feed.scrollHeight;
   }
 
-  document.getElementById('sendBtn').addEventListener('click', () =>
+  async function refresh()
+  {
+    const items = await loadHistory();
+    render(items);
+  }
+
+  sendBtn.addEventListener('click', async () =>
   {
     const v = (text.value || '').trim();
 
     if (!v) 
       return;
 
-    const arr = loadConv();
-    arr.push({ from: myId, to: withId, text: v, ts: Date.now() });
-    saveConv(arr);
-    text.value = '';
-    renderConv();
+    try 
+    {
+      await window.api.messages.send(withId, v, bookId);
+      text.value = '';
+      await refresh();
+    } catch (e) {
+      alert(e?.message || String(e));
+    }
   });
 
+
   const confirmBtn = document.getElementById('confirmBtn');
+  function swapKey(withId, bookId){ return `swap_${withId}_${bookId}`; }
   function renderConfirm()
   {
     const state = localStorage.getItem(swapKey(withId, bookId)) || 'none';
@@ -117,7 +107,6 @@ export async function init()
       (state === 'me' ? 'You confirmed. ' : '') +
       (otherConfirmed ? 'Partner confirmed ✓' : 'Waiting partner...');
   }
-
   confirmBtn.addEventListener('click', () =>
   {
     const cur = localStorage.getItem(swapKey(withId, bookId));
@@ -126,13 +115,14 @@ export async function init()
     renderConfirm();
   });
 
+
   const reportBtn = document.getElementById('reportBtn');
   reportBtn.addEventListener('click', (e) =>
   {
     e.preventDefault();
-    location.hash = `#/report?to=${encodeURIComponent(withId)}&book=${encodeURIComponent(bookId)}`;
+    location.hash = `#/report?to=${encodeURIComponent(withId)}&book=${encodeURIComponent(bookId||'')}`;
   });
 
-  renderConv();
+  await refresh();
   renderConfirm();
 }

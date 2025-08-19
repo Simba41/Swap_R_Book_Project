@@ -7,6 +7,8 @@
   window.clearToken = () => localStorage.removeItem('token');
 })();
 
+
+
 async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {}) 
 {
   const h = { 'Content-Type': 'application/json', ...headers };
@@ -21,21 +23,18 @@ async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {
   }
   const res  = await fetch(`${API_BASE}${path}`, { method, headers: h, body: body ? JSON.stringify(body) : undefined });
   let data = null;
-  try 
-  { 
-    data = await res.json(); 
-  } catch {}
 
+  try 
+  { data = await res.json(); } catch {}
   if (!res.ok) 
   {
     const msg = (data && data.message) ? data.message : `HTTP ${res.status}`;
 
-    if (res.status === 401) 
-    { 
-      clearToken(); 
-      if (!/login\.html$/i.test(location.pathname)) location.href = 'login.html'; 
-    }
+    if (res.status === 401) { clearToken(); 
+
+    if (!/login\.html$/i.test(location.pathname)) location.href = 'login.html'; }
     throw new Error(msg);
+
   }
   return data;
 }
@@ -45,6 +44,7 @@ function buildQuery(obj={})
   const q = new URLSearchParams();
   for (const [k,v] of Object.entries(obj)) 
     if (v!==undefined && v!==null && v!=='') q.set(k,v);
+
   const s = q.toString(); 
   return s ? `?${s}` : '';
 }
@@ -58,7 +58,7 @@ window.api =
   users: 
   { 
     get: (id) => apiFetch(`/api/users/${id}`, { method:'GET' }),
-    update: (payload) => apiFetch('/api/users/me', { method:'PUT', auth:true, body: payload }), 
+    update: (payload) => apiFetch('/api/users/me', { method:'PUT', auth:true, body: payload }),
     password: ({ currentPassword, newPassword }) => apiFetch('/api/users/me/password', { method:'PUT', auth:true, body:{ currentPassword, newPassword } })
   },
 
@@ -74,9 +74,15 @@ window.api =
 
   messages: 
   {
-    list: (withId, book=null) => apiFetch('/api/messages' + buildQuery({ with: withId, book }), { auth:true }),
-    send: (to, text, book=null) => apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
+    list: (withId=null, book=null) =>
+      withId
+        ? apiFetch('/api/messages' + buildQuery({ with: withId, book }), { auth:true }) 
+        : apiFetch('/api/messages', { auth:true }),                                       
+
+    send: (to, text, book=null) =>
+      apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
   },
+
   notifications: 
   {
     list: (unread=false) => apiFetch('/api/notifications' + buildQuery({ unread: unread?1:0 }), { auth:true }),
