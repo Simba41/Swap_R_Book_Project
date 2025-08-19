@@ -1,6 +1,12 @@
-// js/app_category_detail.js — **ИЗМЕНЕНО**: книги по жанру с API
-const defaultCover = 'images/placeholder.png';
-const getParam = n => (location.hash.match(new RegExp(`[?&]${n}=([^&]+)`))||[])[1] ? decodeURIComponent(RegExp.$1) : '';
+const defaultCover = 'images/def_user.png';
+
+
+
+function getParam(name)
+{
+  const m = location.hash.match(new RegExp(`[?&]${name}=([^&]+)`));
+  return m ? decodeURIComponent(m[1]) : '';
+}
 
 export async function init()
 {

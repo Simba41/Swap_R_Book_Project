@@ -77,19 +77,16 @@ window.api = {
   
   login:    (email, password) => apiFetch('/api/auth/login',    { method: 'POST', body: { email, password } }),
   register: (payload)         => apiFetch('/api/auth/register', { method: 'POST', body: payload }),
-  me:       ()                => apiFetch('/api/auth/me',       { method: 'GET',  auth: true }),
 
   
-  users: 
-  {
-    get: (id) => apiFetch(`/api/users/${id}`, { method: 'GET' }),
-  },
+  me:       async () => (await apiFetch('/api/auth/me', { method: 'GET', auth: true })).user,
 
-  
-  books: 
-  {
+  users: { get: (id) => apiFetch(`/api/users/${id}`, { method: 'GET' }) },
+
+  books: {
     list:   (params = {})   => apiFetch('/api/books' + buildQuery(params), { method: 'GET' }),
-    genres: ()              => apiFetch('/api/books/genres',               { method: 'GET' }),
+    
+    genres: async ()        => (await apiFetch('/api/books/genres', { method: 'GET' })).items || [],
     get:    (id)            => apiFetch(`/api/books/${id}`,                { method: 'GET' }),
     create: (payload)       => apiFetch('/api/books',                      { method: 'POST',   auth: true, body: payload }),
     update: (id, payload)   => apiFetch(`/api/books/${id}`,                { method: 'PUT',    auth: true, body: payload }),

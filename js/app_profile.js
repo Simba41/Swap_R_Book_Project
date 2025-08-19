@@ -1,31 +1,48 @@
-import { currentUser } from './demo-data.js';
-
-export function init()
+export async function init()
 {
-  document.getElementById('profName').textContent  = currentUser.name || 'User';
-  document.getElementById('profEmail').textContent = currentUser.email || '';
+  let me = null;
+  try 
+  { 
+    me = await window.api.me(); 
+  } catch 
+  { 
+    me = null; 
+  }
+
+  const fullName = [me?.firstName, me?.lastName].filter(Boolean).join(' ') || 'Friend';
+  document.getElementById('profName').textContent  = fullName;
+  document.getElementById('profEmail').textContent = me?.email || '';
 
   const file = document.getElementById('profFile');
   const img  = document.getElementById('profImg');
 
   document.getElementById('profPlus').addEventListener('click', ()=> file.click());
-  file.addEventListener('change', e=>
+  file.addEventListener('change', e =>
   {
-    const f=e.target.files?.[0]; if(!f) return;
-    const r=new FileReader(); r.onload=()=>
+    const f = e.target.files?.[0]; 
+
+    if (!f) 
+      return;
+
+    const r = new FileReader(); 
+    r.onload = () => 
     { 
-      localStorage.setItem('avatar_data', r.result); img.src=r.result; 
+      localStorage.setItem('avatar_data', r.result); 
+      img.src = r.result; 
     }; 
+
     r.readAsDataURL(f);
   });
 
-  // восстановление сохранённого
-  const saved = localStorage.getItem('avatar_data'); if (saved) img.src = saved;
+  const saved = localStorage.getItem('avatar_data'); 
 
-  document.getElementById('logoutBtn').addEventListener('click', ()=>
+  if (saved) 
+    img.src = saved;
+
+  document.getElementById('logoutBtn').addEventListener('click', () =>
   {
-    localStorage.removeItem('token');
-    alert('Logged out (demo)');
+    window.clearToken?.();
+    alert('Logged out');
     location.href = 'login.html';
   });
 }

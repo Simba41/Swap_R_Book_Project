@@ -16,6 +16,31 @@ function saveNotifs(arr)
   localStorage.setItem('notifications', JSON.stringify(arr)); 
 }
 
+
+function updateBellBadge()
+{
+  const badge = document.getElementById('bellBadge');
+
+  if (!badge) 
+    return;
+
+  const arr = loadNotifs();
+  const c = (arr||[]).filter(n=>!n.read).length;
+
+  if (c>0) 
+  { 
+      badge.style.display='grid'; 
+      badge.textContent=String(c); 
+  }
+  else 
+  { 
+    badge.style.display='none'; 
+    badge.textContent='0'; 
+  }
+}
+
+
+
 export function init()
 {
   const list = document.getElementById('notifList');
@@ -27,6 +52,7 @@ export function init()
   if (!arr.length)
   { 
     list.replaceChildren(empty.content.firstElementChild.cloneNode(true)); 
+    updateBellBadge();
     return; 
   }
 
@@ -43,6 +69,8 @@ export function init()
     
     {
       n.read = true; saveNotifs(arr);
+      saveNotifs(arr);
+      updateBellBadge();
       if (n.link) location.hash = n.link; else alert('Opened (demo)');
     });
 
@@ -53,4 +81,5 @@ export function init()
   });
   
   list.replaceChildren(frag);
+  updateBellBadge();
 }

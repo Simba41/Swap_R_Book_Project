@@ -1,7 +1,6 @@
 <h1 class="h1">Upload</h1>
 
 <div class="stepper" id="stepper"></div>
-
 <div id="stepWrap"></div>
 
 <div class="row">
@@ -12,24 +11,22 @@
 <template id="step1">
   <section class="card soft">
     <div><b>1. Book name</b></div>
-
     <input class="input" id="upTitle" placeholder="Type name of book" />
 
     <div style="margin-top:12px"><b>2. Author</b></div>
-
     <input class="input" id="upAuthor" placeholder="Type author of book" />
 
     <div style="margin-top:12px"><b>3. Review</b></div>
-
     <textarea class="textarea" id="upReview" rows="4" placeholder="Type a little review."></textarea>
 
     <div style="margin-top:12px"><b>4. Image</b></div>
-
     <input type="file" id="upImage" accept="image/*" />
-    
+
+    <button class="btn" id="btnAutofill" type="button" style="margin-top:8px">Autofill by title/ISBN</button>
+
+    <img id="upPreview" alt="" style="display:block; margin-top:8px; max-width:160px; border-radius:8px"/>
   </section>
 </template>
-
 
 <template id="step2">
   <section class="card soft">

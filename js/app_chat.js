@@ -1,55 +1,64 @@
-import { users, demoBooks, currentUser } from './demo-data.js';
+
 
 function getHashParam(name)
 {
   const m = location.hash.match(new RegExp(`[?&]${name}=([^&]+)`));
   return m ? decodeURIComponent(m[1]) : '';
 }
-function getUser(id)
-{ 
-  return (users || []).find(u => u.id === id) || { name:'User' }; 
+
+function displayName(u)
+{
+  return u?.name || [u?.firstName, u?.lastName].filter(Boolean).join(' ') || 'User';
 }
 
-function getBook(id)
-{ 
-  return (demoBooks || []).find(b => b.id === id) || null; 
-}
-
-function convKey(withId, bookId)
+function convKey(withId, bookId) 
 { 
   return `conv_${withId}_${bookId}`; 
 }
 
 
-function swapKey(withId, bookId)
+function swapKey(withId, bookId) 
 { 
   return `swap_${withId}_${bookId}`; 
 }
 
-export function init()
+export async function init()
 {
   const withId = getHashParam('with');
   const bookId = getHashParam('book');
-  const buddy  = getUser(withId);
-  const book   = getBook(bookId);
+
+  let me = null;
+  try 
+  { 
+    me = await window.api.me(); 
+  } catch 
+  { 
+    me = null; 
+  }
+
+  const myId = me?.id || me?._id || 'guest';
+
+  const buddy = withId ? await window.api.users.get(withId).catch(()=>null) : null;
+  const book  = bookId ? await window.api.books.get(bookId).catch(()=>null) : null;
 
   const avatar = document.getElementById('chatPeerAvatar');
   const openProfileBtn = document.getElementById('openProfileBtn');
-  document.getElementById('chatWith').textContent = buddy.name || 'User';
+  document.getElementById('chatWith').textContent = displayName(buddy);
   document.getElementById('chatMeta').textContent = book ? `About: ${book.title}` : '';
 
-  if (buddy.avatar)
-  {
-    avatar.innerHTML = `<img src="${buddy.avatar}" alt="${buddy.name}">`;
-  } else 
-  {
-    avatar.innerHTML = buddy.name ? buddy.name[0].toUpperCase() : '👤';
-  }
+  if (buddy?.avatar)
+    avatar.innerHTML = `<img src="${buddy.avatar}" alt="${displayName(buddy)}">`;
+  else
+    avatar.innerHTML = displayName(buddy).slice(0,1).toUpperCase() || '👤';
 
-  const openProfile = (e)=>{ e.preventDefault?.(); location.hash = `#/user?id=${encodeURIComponent(buddy.id)}`; };
+  const openProfile = (e)=>
+  { 
+      e.preventDefault?.(); 
+      if (withId) location.hash = `#/user?id=${encodeURIComponent(withId)}`;
+  };
+
   avatar.addEventListener('click', openProfile);
   openProfileBtn.addEventListener('click', openProfile);
-
 
   const feed = document.getElementById('chatFeed');
   const text = document.getElementById('chatText');
@@ -58,16 +67,14 @@ export function init()
   {
     try 
     { 
-      return JSON.parse(localStorage.getItem(convKey(withId, bookId)) || '[]');
+      return JSON.parse(localStorage.getItem(convKey(withId, bookId)) || '[]'); 
     }
     catch 
     { 
       return []; 
     }
   }
-
-
-  function saveConv(arr)
+  function saveConv(arr) 
   { 
     localStorage.setItem(convKey(withId, bookId), JSON.stringify(arr)); 
   }
@@ -76,7 +83,7 @@ export function init()
   {
     const arr = loadConv();
     feed.innerHTML = arr.map(msg => `
-      <div class="msg ${msg.from === currentUser.id ? 'me' : 'them'}">
+      <div class="msg ${msg.from === myId ? 'me' : 'them'}">
         <div class="bubble">${msg.text}</div>
         <div class="time muted">${new Date(msg.ts).toLocaleTimeString()}</div>
       </div>
@@ -84,15 +91,15 @@ export function init()
     feed.scrollTop = feed.scrollHeight;
   }
 
-  document.getElementById('sendBtn').addEventListener('click', () => 
+  document.getElementById('sendBtn').addEventListener('click', () =>
   {
     const v = (text.value || '').trim();
-  
+
     if (!v) 
       return;
 
     const arr = loadConv();
-    arr.push({ from: currentUser.id, to: withId, text: v, ts: Date.now() });
+    arr.push({ from: myId, to: withId, text: v, ts: Date.now() });
     saveConv(arr);
     text.value = '';
     renderConv();
@@ -111,7 +118,7 @@ export function init()
       (otherConfirmed ? 'Partner confirmed ✓' : 'Waiting partner...');
   }
 
-  confirmBtn.addEventListener('click', () => 
+  confirmBtn.addEventListener('click', () =>
   {
     const cur = localStorage.getItem(swapKey(withId, bookId));
     const next = cur === 'me' ? 'none' : 'me';
@@ -120,10 +127,10 @@ export function init()
   });
 
   const reportBtn = document.getElementById('reportBtn');
-  reportBtn.addEventListener('click', (e) => 
+  reportBtn.addEventListener('click', (e) =>
   {
     e.preventDefault();
-    location.hash = `#/report?to=${encodeURIComponent(buddy.id)}&book=${encodeURIComponent(bookId)}`;
+    location.hash = `#/report?to=${encodeURIComponent(withId)}&book=${encodeURIComponent(bookId)}`;
   });
 
   renderConv();

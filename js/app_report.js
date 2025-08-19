@@ -11,15 +11,39 @@ export function init()
   const btn  = document.getElementById('rpSend');
   const ta   = document.getElementById('rpText');
 
-  btn.addEventListener('click', () => 
+  btn.addEventListener('click', async () => 
   {
     const text = (ta.value || '').trim();
+
     if (!text) 
       return alert('Please write your report.');
-    
-    // демо-отправка
-    console.log('REPORT_SENT', { to, book, text });
-    alert('Report has been sent to admin (demo).');
+
+    try
+    {
+      const headers = { 'Content-Type': 'application/json' };
+      const t = window.getToken?.();
+
+      if (t) 
+        headers.Authorization = `Bearer ${t}`;
+
+      const res = await fetch(`${API_BASE}/api/reports`, 
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ to, book, text })
+      });
+
+      if (res.ok) 
+      {
+        alert('Report sent ✓');
+        location.hash = '#/chat' + (to ? `?with=${encodeURIComponent(to)}&book=${encodeURIComponent(book)}` : '');
+        return;
+      }
+    }
+    catch {}
+
+    console.log('REPORT_SENT_DEMO', { to, book, text });
+    alert('Report queued locally (demo).');
     location.hash = '#/chat' + (to ? `?with=${encodeURIComponent(to)}&book=${encodeURIComponent(book)}` : '');
   });
 }

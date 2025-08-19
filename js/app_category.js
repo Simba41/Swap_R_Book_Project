@@ -10,14 +10,16 @@ export async function init()
   let categories = [];
   try 
   {
-    const data = await window.api.books.genres();      
-    categories = Array.isArray(data.items) ? data.items : [];
+    const raw = await window.api.books.genres();
+    categories = Array.isArray(raw) ? raw : (Array.isArray(raw?.items) ? raw.items : []);
   } catch 
   { 
     categories = []; 
   }
 
   const frag = document.createDocumentFragment();
+
+
   categories.forEach(c =>
   {
     const node = tplCat.content.firstElementChild.cloneNode(true);
@@ -26,6 +28,8 @@ export async function init()
     frag.appendChild(node);
   });
   list.replaceChildren(frag);
+
+
 
   list.addEventListener('click', (e) =>
   {

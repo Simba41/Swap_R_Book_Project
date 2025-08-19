@@ -1,5 +1,4 @@
 
-import { appCategories } from './demo-data.js';
 
 const stepsTotal = 4;
 
@@ -8,9 +7,9 @@ const state =
   title: '',
   author: '',
   review: '',
-  imageData: '',  
+  imageData: '',  // dataURL 
   category: '',
-  location: {}    
+  location: {}    // {lat, lng}
 };
 
 function renderStepper(cur) 
@@ -39,13 +38,14 @@ function mountStep(idx)
   renderStepper(idx);
 
   if (idx === 0) 
-    {
-    const title  = document.getElementById('upTitle');
-    const author = document.getElementById('upAuthor');
-    const review = document.getElementById('upReview');
-    const imgInp = document.getElementById('upImage');
-    const imgPrev= document.getElementById('upPreview');
-    const autoBtn= document.getElementById('btnAutofill');
+  {
+    const title   = document.getElementById('upTitle');
+    const author  = document.getElementById('upAuthor');
+    const review  = document.getElementById('upReview');
+    const imgInp  = document.getElementById('upImage');
+    const imgPrev = document.getElementById('upPreview');     
+    const autoBtn = document.getElementById('btnAutofill');   
+
 
     if (title)  title.value  = state.title || '';
     if (author) author.value = state.author || '';
@@ -94,23 +94,28 @@ function mountStep(idx)
 
           const best = data.items[0];
 
-          if (title)  title.value  = best.title  || title.value;
-          if (author) author.value = best.author || author.value;
+          if (title)  
+            title.value  = best.title  || title.value;
+
+          if (author) 
+            author.value = best.author || author.value;
 
           if (best.cover) 
           {
-            state.imageData = best.cover; 
+            state.imageData = best.cover; // URL
 
             if (imgPrev) 
               imgPrev.src = best.cover;
 
           }
           alert('Autofilled ✓');
-        } catch (e) 
+        } 
+        catch (e) 
         {
           alert('Autofill failed: ' + (e?.message || e));
         }
       });
+
     }
   }
 
@@ -120,46 +125,41 @@ function mountStep(idx)
     const list = document.getElementById('upCats');
     if (list) 
     {
-      list.innerHTML = appCategories
+      list.innerHTML = (CATEGORIES || [])
         .map(c => `
           <button type="button" class="tile${state.category===c?' active':''}" data-c="${c}">
             <span>${c}</span><span>${state.category===c?'✓':'○'}</span>
           </button>
         `).join('');
+
       list.addEventListener('click', e => 
-        {
+      {
         const t = e.target.closest('.tile'); 
 
         if (!t) 
           return;
 
         state.category = t.dataset.c;
-
         Array.from(list.children).forEach(n => n.classList.remove('active'));
         t.classList.add('active');
       });
     }
   }
 
-
   if (idx === 2) 
   {
     const list = document.getElementById('upConfirmCat');
-
     if (list) 
     {
       list.innerHTML = state.category
         ? `<div class="tile"><b>${state.category}</b><span>✓</span></div>`
         : `<div class="muted">Select a category first.</div>`;
     }
-
   }
-
 
   if (idx === 3) 
   {
     const useGeoBtn = document.getElementById('useGeo');
-
     if (useGeoBtn) 
     {
       useGeoBtn.addEventListener('click', () => 
@@ -180,20 +180,39 @@ function mountStep(idx)
   }
 }
 
-export function init() 
+
+async function loadCategories()
 {
+  try 
+  {
+    const raw = await window.api.books.genres();
+    return Array.isArray(raw) ? raw : (Array.isArray(raw?.items) ? raw.items : []);
+  } catch 
+  { 
+    return []; 
+  }
+}
+
+export async function init() 
+{
+  CATEGORIES = await loadCategories();
+
   let cur = 0;
   mountStep(cur);
 
   const backBtn = document.getElementById('backBtn');
   backBtn && backBtn.addEventListener('click', () => 
   {
-    if (cur > 0) { cur--; mountStep(cur); }
+    if (cur > 0) 
+    { 
+      cur--;
+      mountStep(cur); 
+    }
   });
 
   const nextBtn = document.getElementById('nextBtn');
-  nextBtn && nextBtn.addEventListener('click', async () => {
-
+  nextBtn && nextBtn.addEventListener('click', async () => 
+  {
     if (cur === 0) 
     {
       const title  = document.getElementById('upTitle');
@@ -206,9 +225,7 @@ export function init()
 
       if (!state.title || !state.author)
         return alert('Fill title and author');
-
     }
-
 
     if (cur < stepsTotal - 1) 
     {
@@ -236,17 +253,19 @@ export function init()
         loc:    state.location || null
       };
 
-      await window.api.books.create(payload);
+      await window.api.books.create(payload); 
       alert('Submitted ✓');
       location.hash = '#/my';
-    } catch (e) 
+    } 
+    catch (e) 
     {
       const msg = e?.message || String(e);
       if (msg === 'NO_TOKEN') 
       {
         alert('Please log in first');
         location.href = 'login.html';
-      } else 
+      } 
+      else 
       {
         alert('Failed: ' + msg);
       }

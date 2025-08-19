@@ -1,6 +1,16 @@
-const defaultCover = 'images/placeholder.png';
+const defaultCover = 'images/def_user.png';
+
+
 const getParam = name => 
-(location.hash.match(new RegExp(`[?&]${name}=([^&]+)`))||[])[1] ? decodeURIComponent(RegExp.$1) : '';
+{
+  const m = location.hash.match(new RegExp(`[?&]${name}=([^&]+)`));
+  return m ? decodeURIComponent(m[1]) : '';
+};
+
+function displayName(u)
+{
+  return u?.name || [u?.firstName, u?.lastName].filter(Boolean).join(' ') || 'Owner';
+}
 
 
 
@@ -31,13 +41,16 @@ export async function init()
   const profileBtn= document.getElementById('ownerProfileBtn');
   const chatTop   = document.getElementById('chatBtnTop');
 
-  topName && (topName.textContent = (owner && owner.name) || 'Owner');
+  topName && (topName.textContent = displayName(owner));
 
   if (topAvatar) topAvatar.innerHTML = (owner && owner.avatar)
     ? `<img src="${owner.avatar}" alt="${owner.name}">`
     : (owner && owner.name ? owner.name[0].toUpperCase() : '👤');
 
+
+
   topAvatar && topAvatar.addEventListener('click', (e)=>{ e.preventDefault?.(); if(ownerId) location.hash = `#/user?id=${ownerId}`; });
+
   profileBtn && profileBtn.addEventListener('click', (e)=>{ e.preventDefault(); if(ownerId) location.hash = `#/user?id=${ownerId}`; });
 
   chatTop && chatTop.addEventListener('click', ()=> ownerId && (location.hash = `#/chat?with=${encodeURIComponent(ownerId)}&book=${encodeURIComponent(book._id || id)}`));
@@ -51,6 +64,7 @@ export async function init()
   const pickup = document.getElementById('bkPickup');
   const dist   = document.getElementById('bkDistance');
   const own    = document.getElementById('bkOwner');
+
 
   if (cover)  { cover.src = book.cover || defaultCover; cover.alt = `${book.title} cover`; }
   if (title)  title.textContent  = book.title || '';
