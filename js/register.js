@@ -25,17 +25,15 @@
 
     try 
     {
-      await window.api.register({ firstName, lastName, email, password }); 
+      await window.api.register({ firstName, lastName, email, password });
       setMsg('Account created. Redirecting…', 'success');
-      setTimeout(() => window.location.href = 'login.html', 700);
-    }
-    catch (error) 
-    { 
-        setMsg(error.message, 'error'); 
-    }
-    finally 
-    { 
-        btn && (btn.disabled = false); 
+      setTimeout(() => location.replace('login.html'), 700); // 700 мс на чтение сообщения
+    } catch (error) 
+    {
+      setMsg(error.message, 'error');
+    } finally 
+    {
+      btn && (btn.disabled = false);
     }
   });
 })();

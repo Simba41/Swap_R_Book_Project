@@ -37,18 +37,19 @@
 
       try 
       {
-        const { token, user } = await window.api.login(email, password);   
-        window.setToken(token);                                            
+        const { token, user } = await window.api.login(email, password);
+        window.setToken(token);
         setMsg(`Welcome back, ${user.firstName}! Redirecting…`, 'success');
-        window.location.href = 'app.html';
-      }
-      catch (error) 
-      { 
-        setMsg(error.message, 'error'); 
-      }
-      finally 
-      { 
-        btn && (btn.disabled = false); 
+
+        location.replace('app.html'); 
+        return;
+
+      } catch (error) 
+      {
+        setMsg(error.message, 'error');
+      } finally 
+      {
+        btn && (btn.disabled = false);
       }
   });
 })();
