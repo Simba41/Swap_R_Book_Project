@@ -40,7 +40,7 @@
         const { token, user } = await window.api.login(email, password);   
         window.setToken(token);                                            
         setMsg(`Welcome back, ${user.firstName}! Redirecting…`, 'success');
-        setTimeout(() => (window.location.href = 'app.html'), 700);  
+        window.location.href = 'app.html';
       }
       catch (error) 
       { 
