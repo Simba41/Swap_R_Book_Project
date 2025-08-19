@@ -27,7 +27,7 @@
     {
       await window.api.register({ firstName, lastName, email, password });
       setMsg('Account created. Redirecting…', 'success');
-      setTimeout(() => location.replace('login.html'), 700); // 700 мс на чтение сообщения
+      setTimeout(() => location.replace('login.html')); // 700 мс на чтение сообщения
     } catch (error) 
     {
       setMsg(error.message, 'error');
