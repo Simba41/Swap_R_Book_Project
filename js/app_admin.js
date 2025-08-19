@@ -1,11 +1,10 @@
-export async function init()
-{
- 
-  try
+export async function init(){
+  try 
   {
     const m = await window.api.admin.metrics();
-    document.getElementById('metrics').textContent = `USERS:${m.users}  BOOKS:${m.books}  MSGS:${m.messages}  NOTIFS:${m.notifications}`;
-  }catch(e)
+    document.getElementById('metrics').textContent =
+      `USERS: ${m.users}  BOOKS: ${m.books}  MSGS: ${m.messages}  NOTIFS: ${m.notifications}`;
+  } catch 
   {
     document.getElementById('metrics').textContent = 'metrics error';
   }
@@ -16,48 +15,167 @@ export async function init()
   {
     const q=document.getElementById('uq').value||'';
     const data = await window.api.admin.users({ q, limit:50, page:1 });
-    const lines = data.items.map(u=>`${u._id}  ${u.firstName||''} ${u.lastName||''} <${u.email}>  role:${u.role}  banned:${u.banned}`);
-    feed.textContent = lines.join('\n') + (lines.length? '\n\nClick a user id to ban/unban, or type ban:<id>, unban:<id>.' : '\nNo users.');
+
+    if (!data.items.length) 
+    { 
+      feed.innerHTML='<p class="muted">No users</p>';
+      return; 
+    }
+
+    let html = `<table class="admin-table"><thead>
+      <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Banned</th><th>Action</th></tr>
+    </thead><tbody>`;
+
+
+    for (const u of data.items) 
+    {
+      html += `<tr>
+        <td>${u._id}</td>
+        <td>${u.firstName||''} ${u.lastName||''}</td>
+        <td>${u.email}</td>
+        <td>${u.role}</td>
+        <td>${u.banned}</td>
+        <td>
+          <button data-act="${u.banned?'unban':'ban'}" data-id="${u._id}" class="btn small">
+            ${u.banned?'Unban':'Ban'}
+          </button>
+        </td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
+    feed.innerHTML=html;
+
+    feed.querySelectorAll('button[data-act]').forEach(btn=>
+    {
+      btn.addEventListener('click', async ()=>
+      {
+        const id=btn.dataset.id, act=btn.dataset.act;
+
+        if (act==='ban') 
+          await window.api.admin.ban(id);
+
+        else await window.api.admin.unban(id);
+
+        await listUsers();
+      });
+    });
   }
 
   async function listBooks()
   {
     const q=document.getElementById('bq').value||'';
     const data = await window.api.admin.books({ q, limit:50, page:1 });
-    const lines = data.items.map(b=>`${b._id}  "${b.title}" by ${b.author}  owner:${b.ownerId}`);
-    feed.textContent = lines.join('\n') + (lines.length? '\n\nType delbook:<id> to delete.' : '\nNo books.');
+
+    if (!data.items.length) 
+    { 
+      feed.innerHTML='<p class="muted">No books</p>'; 
+      return; 
+    }
+
+    let html = `<table class="admin-table"><thead>
+      <tr><th>ID</th><th>Title</th><th>Author</th><th>Owner</th><th>Action</th></tr>
+    </thead><tbody>`;
+
+
+
+    for (const b of data.items) 
+    {
+      html += `<tr>
+        <td>${b._id}</td>
+        <td>${b.title}</td>
+        <td>${b.author}</td>
+        <td>${b.ownerId}</td>
+        <td><button data-del="${b._id}" class="btn small danger">Delete</button></td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
+    feed.innerHTML=html;
+
+    feed.querySelectorAll('button[data-del]').forEach(btn=>
+    {
+      btn.addEventListener('click', async ()=>
+      {
+        await window.api.books.remove(btn.dataset.del);
+        await listBooks();
+
+      });
+    });
   }
+
+
 
   async function listReports()
   {
-    try
-    {
-      const data = await window.api.admin.reports({ limit:50, page:1 });
-      const lines = data.items.map(r=>`${r._id}  from:${r.from||'-'}  to:${r.to||'-'}  book:${r.book||'-'}  "${r.text}"  resolved:${r.resolved}`);
-      feed.textContent = lines.join('\n') + (lines.length? '\n\nType resolve:<id> to resolve.' : '\nNo reports.');
-    }catch(e)
-    {
-      feed.textContent = 'Failed to load reports';
+    const data = await window.api.admin.reports({ limit:50, page:1 });
+
+    if (!data.items.length) 
+    { 
+      feed.innerHTML='<p class="muted">No reports</p>'; 
+      return; 
     }
+
+    let html = `<table class="admin-table"><thead>
+      <tr><th>ID</th><th>From</th><th>To</th><th>Book</th><th>Text</th><th>Resolved</th><th>Action</th></tr>
+    </thead><tbody>`;
+
+
+    for (const r of data.items) 
+    {
+      html += `<tr>
+        <td>${r._id}</td>
+        <td>${r.from||'-'}</td>
+        <td>${r.to||'-'}</td>
+        <td>${r.book||'-'}</td>
+        <td>${r.text}</td>
+        <td>${r.resolved}</td>
+        <td><button data-res="${r._id}" class="btn small">Resolve</button></td>
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+    feed.innerHTML=html;
+
+    feed.querySelectorAll('button[data-res]').forEach(btn=>
+    {
+      btn.addEventListener('click', async ()=>
+      {
+        await window.api.admin.resolveReport(btn.dataset.res);
+        await listReports();
+
+      });
+    });
+  }
+
+  async function listChanges() 
+  {
+    const data = await window.api.admin.changes({ limit:50, page:1 });
+
+    if (!data.items.length) 
+    { 
+      feed.innerHTML='<p class="muted">No changes</p>'; 
+      return; 
+    }
+
+    let html = `<table class="admin-table"><thead>
+      <tr><th>Date</th><th>User</th><th>Field</th><th>From</th><th>To</th></tr>
+    </thead><tbody>`;
+
+    for (const c of data.items) 
+    {
+      html += `<tr>
+        <td>${new Date(c.createdAt).toLocaleString()}</td>
+        <td>${c.userId}</td>
+        <td>${c.field}</td>
+        <td>${c.from}</td>
+        <td>${c.to}</td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
+    feed.innerHTML=html;
   }
 
   document.getElementById('uSearch').addEventListener('click', listUsers);
   document.getElementById('bSearch').addEventListener('click', listBooks);
   document.getElementById('showReports').addEventListener('click', listReports);
-  document.getElementById('showChanges').addEventListener('click', async ()=>
-  { 
-    const data = await window.api.admin.changes({ limit:50, page:1 }); 
-    feed.textContent = data.items.map(c=>`${c.createdAt}  user:${c.userId}  ${c.field}  ${c.from} -> ${c.to}`).join('\n') || 'No changes.'; 
-  });
-
-  feed.addEventListener('click', async (e)=>
-  {
-    const cmd = prompt('Command (ban:<id> | unban:<id> | delbook:<id> | resolve:<id> | notify:<text>)');
-    if (!cmd) return;
-    if (cmd.startsWith('ban:')){ const id=cmd.slice(4).trim(); await window.api.admin.ban(id); alert('Banned ✓'); await listUsers(); }
-    else if (cmd.startsWith('unban:')){ const id=cmd.slice(6).trim(); await window.api.admin.unban(id); alert('Unbanned ✓'); await listUsers(); }
-    else if (cmd.startsWith('delbook:')){ const id=cmd.slice(8).trim(); await window.api.books.remove(id); alert('Deleted ✓'); await listBooks(); }
-    else if (cmd.startsWith('resolve:')){ const id=cmd.slice(8).trim(); await window.api.admin.resolveReport(id); alert('Resolved ✓'); await listReports(); }
-    else if (cmd.startsWith('notify:')){ const text=cmd.slice(7).trim(); await window.api.admin.notify({ text }); alert('Sent ✓'); }
-  });
-} 
+  document.getElementById('showChanges').addEventListener('click', listChanges);
+}

@@ -1,85 +1,96 @@
-function loadNotifs()
+async function loadNotifs() 
 {
-  try
-  { 
-    return JSON.parse(localStorage.getItem('notifications')||'[]'); 
-  }
-  catch
-  { 
-    return []; 
+  try 
+  {
+    return await window.api.notifications.list(); 
+  } catch(e) 
+  {
+    console.error(e);
+    return [];
   }
 }
 
-
-function saveNotifs(arr)
-{ 
-  localStorage.setItem('notifications', JSON.stringify(arr)); 
+async function markRead(id) 
+{
+  try 
+  { 
+    await window.api.notifications.read(id); 
+  } catch(e) 
+  { 
+    console.error(e); 
+  }
 }
 
-
-function updateBellBadge()
+export async function updateBellBadge() 
 {
   const badge = document.getElementById('bellBadge');
 
   if (!badge) 
     return;
 
-  const arr = loadNotifs();
-  const c = (arr||[]).filter(n=>!n.read).length;
-
-  if (c>0) 
+  let arr = [];
+  try 
   { 
-      badge.style.display='grid'; 
-      badge.textContent=String(c); 
+    arr = await window.api.notifications.list(true); 
+  } 
+  catch(e)
+  { 
+    console.error(e); 
   }
-  else 
-  { 
-    badge.style.display='none'; 
-    badge.textContent='0'; 
+
+  const c = arr.length;
+
+  if (c > 0) 
+  {
+    badge.style.display = 'grid';
+    badge.textContent = String(c);
+  } else 
+  {
+    badge.style.display = 'none';
+    badge.textContent = '0';
   }
 }
 
-
-
-export function init()
+export async function init()
 {
   const list = document.getElementById('notifList');
   const tpl  = document.getElementById('tpl-item');
   const empty= document.getElementById('tpl-empty');
 
-  const arr = loadNotifs();
+  const arr = await loadNotifs();
 
-  if (!arr.length)
-  { 
-    list.replaceChildren(empty.content.firstElementChild.cloneNode(true)); 
-    updateBellBadge();
-    return; 
+  if (!arr.length) 
+  {
+    list.replaceChildren(empty.content.firstElementChild.cloneNode(true));
+    await updateBellBadge();
+    return;
   }
 
   const frag = document.createDocumentFragment();
 
-  arr.forEach(n=>
+  for (const n of arr) 
   {
     const el = tpl.content.firstElementChild.cloneNode(true);
-    el.dataset.id = n.id;
-    el.querySelector('.n-title').textContent = n.title || 'Notification';
-    el.querySelector('.n-time').textContent  = new Date(n.ts||Date.now()).toLocaleString();
+    el.dataset.id = n._id;
+    el.querySelector('.n-title').textContent = n.title || 
+       (n.type==='message' ? 'New message' : 'Notification');
+    el.querySelector('.n-time').textContent  = new Date(n.createdAt||Date.now()).toLocaleString(); 
     el.querySelector('.n-text').textContent  = n.text || '';
-    el.querySelector('.n-open').addEventListener('click', ()=>
-    
+
+    el.querySelector('.n-open').addEventListener('click', async () => 
     {
-      n.read = true; saveNotifs(arr);
-      saveNotifs(arr);
-      updateBellBadge();
-      if (n.link) location.hash = n.link; else alert('Opened (demo)');
+      await markRead(n._id);
+      await updateBellBadge();
+
+      if (n.link) location.hash = n.link; else alert(n.text || 'Opened');
     });
 
     if (!n.read) 
       el.style.borderColor = '#1B497D';
 
     frag.appendChild(el);
-  });
-  
+  }
+
   list.replaceChildren(frag);
-  updateBellBadge();
+  await updateBellBadge();
 }

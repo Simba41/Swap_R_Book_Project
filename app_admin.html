@@ -1,17 +1,18 @@
 <h1 class="h1">Admin</h1>
 
-<section class="card soft admin-metrics">
+<section class="admin-metrics card soft">
   <div id="metrics">loading...</div>
 </section>
 
-<section class="card soft admin-panel"> 
+<section class="admin-panel card soft">
   <div class="admin-controls">
     <input id="uq" class="input" placeholder="Filter users..."/>
     <button id="uSearch" class="btn">Users</button>
     <input id="bq" class="input" placeholder="Filter books..."/>
     <button id="bSearch" class="btn">Books</button>
     <button id="showReports" class="btn">Reports</button>
-    <button id="showChanges" class="btn">Changes</button> 
+    <button id="showChanges" class="btn">Changes</button>
   </div>
-  <pre id="adminFeed"></pre>
+
+  <div id="adminFeed"></div> <!-- **CHANGED**: вместо <pre> -->
 </section>
