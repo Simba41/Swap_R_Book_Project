@@ -13,7 +13,6 @@ export async function init()
 
   const feed = document.getElementById('adminFeed');
 
-  // ---------- small helpers ----------
   async function httpGet(url, params)
   {
     const qs = params && Object.keys(params).length ? '?' + new URLSearchParams(params).toString() : '';
@@ -37,7 +36,7 @@ export async function init()
       (window.api?.admin?.messages ? window.api.admin.messages(p) : httpGet('/api/admin/messages', p))
   };
 
-  // ---------- USERS ----------
+
   async function listUsers()
   {
     const q = document.getElementById('uq').value || '';
@@ -86,7 +85,7 @@ export async function init()
     });
   }
 
-  // ---------- BOOKS ----------
+
   async function listBooks()
   {
     const q = document.getElementById('bq').value || '';
@@ -126,7 +125,7 @@ export async function init()
     });
   }
 
-  // ---------- REPORTS ----------
+
   async function listReports()
   {
     const data = await window.api.admin.reports({ limit:50, page:1 });
@@ -166,7 +165,7 @@ export async function init()
     });
   }
 
-  // ---------- CHANGES ----------
+
   async function listChanges()
   {
     const data = await window.api.admin.changes({ limit:50, page:1 });
@@ -195,7 +194,7 @@ export async function init()
     feed.innerHTML = html;
   }
 
-  // ---------- CONVERSATIONS + HISTORY ----------
+
   function fmtUser(u)
   {
     if (!u) return '-';
@@ -262,7 +261,7 @@ export async function init()
     document.getElementById('backToConvs').addEventListener('click', listConversations);
   }
 
-  // ---------- BIND BUTTONS ----------
+
   document.getElementById('uSearch').addEventListener('click', listUsers);
   document.getElementById('bSearch').addEventListener('click', listBooks);
   document.getElementById('showReports').addEventListener('click', listReports);
