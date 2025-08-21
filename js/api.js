@@ -83,12 +83,18 @@ window.api =
     liked:  ()          => apiFetch('/api/books' + buildQuery({ liked:'me' }), { method:'GET', auth:true }),
   },
 
-  messages: 
+  messages: {
+  list: (params = {}) => 
   {
-    list: (params={}) => apiFetch('/api/messages' + buildQuery(params), { auth:true }),
-    send: ({ to, text, book=null }) =>
-          apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
+    const hasPeer = params && typeof params === 'object' && params.with;
+    const path = hasPeer
+      ? '/api/messages' + buildQuery(params)        
+      : '/api/messages/conversations';            
+    return apiFetch(path, { auth: true });
   },
+  send: ({ to, text, book = null }) =>
+    apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
+},
 
   notifications: 
   {
