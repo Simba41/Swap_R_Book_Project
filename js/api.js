@@ -11,20 +11,15 @@ async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {
 {
   const h = { 'Content-Type': 'application/json', ...headers };
   if (auth) 
-    {
+  {
     const t = getToken();
-
-    if (!t) 
-      throw new Error('NO_TOKEN');
-
+    if (!t) throw new Error('NO_TOKEN');
     h.Authorization = `Bearer ${t}`;
   }
+
   const res  = await fetch(`${API_BASE}${path}`, { method, headers: h, body: body ? JSON.stringify(body) : undefined });
   let data = null;
-  try 
-  { 
-    data = await res.json(); 
-  } catch {}
+  try { data = await res.json(); } catch {}
 
   if (!res.ok) 
   {
@@ -50,8 +45,8 @@ function buildQuery(obj={})
 
 window.api = 
 {
-  login:    (email, password) => apiFetch('/api/auth/login',    { method:'POST', body:{ email, password } }),
-  register: (payload)         => apiFetch('/api/auth/register', { method:'POST', body: payload }),
+  login:    (email, password) => apiFetch('/api/auth/login',    { method:'POST', body:{ email: email.toLowerCase(), password } }),
+  register: (payload)         => apiFetch('/api/auth/register', { method:'POST', body:{ ...payload, email: payload.email.toLowerCase() } }),
   me:       async ()          => (await apiFetch('/api/auth/me', { auth:true })).user,
 
   users: 
