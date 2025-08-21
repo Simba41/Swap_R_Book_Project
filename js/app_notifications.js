@@ -77,16 +77,13 @@ export async function init()
     const el = tpl.content.firstElementChild.cloneNode(true);
     el.dataset.id = n._id;
 
-
-    const title = n.title ?? n.meta?.title ?? (n.type === 'message' ? 'New message' : 'Notification');
-    const txt   = n.text  ?? n.meta?.text  ?? '';
-    const link  = n.link  ?? n.meta?.link  ?? '';
+    const title = n.title || (n.type === 'message' ? 'New message' : 'Notification');
+    const txt   = n.text  || '';
+    const link  = n.link  || '';
 
     el.querySelector('.n-title').textContent = title;
     el.querySelector('.n-time').textContent  = new Date(n.createdAt || Date.now()).toLocaleString();
     el.querySelector('.n-text').textContent  = txt;
-
-
 
     const btn = el.querySelector('.n-open');
     if (btn) 
@@ -98,7 +95,6 @@ export async function init()
         if (link) location.hash = link;
       });
     }
-
 
     if (!n.read) el.style.borderColor = '#1B497D';
 
