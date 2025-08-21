@@ -2,8 +2,9 @@ async function loadNotifs()
 {
   try 
   {
-    return await window.api.notifications.list(); 
-  } catch(e) 
+    const d = await window.api.notifications.list(); 
+    return Array.isArray(d?.items) ? d.items : [];
+  } catch (e) 
   {
     console.error(e);
     return [];
@@ -13,11 +14,11 @@ async function loadNotifs()
 async function markRead(id) 
 {
   try 
-  { 
+  {
     await window.api.notifications.read(id); 
-  } catch(e) 
-  { 
-    console.error(e); 
+  } catch (e) 
+  {
+    console.error(e);
   }
 }
 
@@ -30,12 +31,12 @@ export async function updateBellBadge()
 
   let arr = [];
   try 
-  { 
-    arr = await window.api.notifications.list(true); 
-  } 
-  catch(e)
-  { 
-    console.error(e); 
+  {
+    const d = await window.api.notifications.list(true);
+    arr = Array.isArray(d?.items) ? d.items : [];
+  } catch (e) 
+  {
+    console.error(e);
   }
 
   const c = arr.length;
@@ -50,6 +51,8 @@ export async function updateBellBadge()
     badge.textContent = '0';
   }
 }
+
+
 
 export async function init()
 {
@@ -68,26 +71,30 @@ export async function init()
 
   const frag = document.createDocumentFragment();
 
+
+
+
   for (const n of arr) 
   {
     const el = tpl.content.firstElementChild.cloneNode(true);
     el.dataset.id = n._id;
-    el.querySelector('.n-title').textContent = n.title || 
-       (n.type==='message' ? 'New message' : 'Notification');
-    el.querySelector('.n-time').textContent  = new Date(n.createdAt||Date.now()).toLocaleString(); 
-    el.querySelector('.n-text').textContent  = n.text || '';
 
-    el.querySelector('.n-open').addEventListener('click', async () => 
-    {
+    const title = n.title ?? n.data?.title ?? (n.type === 'message' ? 'New message' : 'Notification');
+    const txt   = n.text  ?? n.data?.text  ?? '';
+    const link  = n.link  ?? n.data?.link  ?? '';
+
+    el.querySelector('.n-title').textContent = title;
+    el.querySelector('.n-time').textContent  = new Date(n.createdAt || Date.now()).toLocaleString();
+    el.querySelector('.n-text').textContent  = txt;
+
+    el.querySelector('.n-open').addEventListener('click', async () => {
       await markRead(n._id);
       await updateBellBadge();
-
-      if (n.link) location.hash = n.link; else alert(n.text || 'Opened');
+      if (link) location.hash = link;
     });
 
-    if (!n.read) 
-      el.style.borderColor = '#1B497D';
-
+    
+    if (!n.read) el.style.borderColor = '#1B497D';
     frag.appendChild(el);
   }
 

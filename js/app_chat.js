@@ -1,44 +1,59 @@
-function getHashParam(name)
+function getHashParam(name) 
 {
   const m = location.hash.match(new RegExp(`[?&]${name}=([^&]+)`));
   return m ? decodeURIComponent(m[1]) : '';
 }
 
-function displayName(u)
+function displayName(u) 
 {
   return u?.name || [u?.firstName, u?.lastName].filter(Boolean).join(' ') || 'User';
 }
 
-export async function init()
+export async function init() 
 {
   const withId = getHashParam('with');
-  const bookId = getHashParam('book') || null;
+  const bookId = getHashParam('book');
+
+  if (!withId) 
+  {
+    document.getElementById('app').innerHTML = `<p class="muted">Chat not found.</p>`;
+    return;
+  }
+
 
   let me = null;
   try 
-  { 
-    me = await window.api.me(); 
+  {
+    me = await window.api.me();
   } catch 
-  { 
-    me = null; 
+  {
+    me = null;
   }
+  const myId = me?.id || me?._id || '';
 
-  const myId = me?.id || me?._id || 'guest';
 
   const buddy = withId ? await window.api.users.get(withId).catch(()=>null) : null;
   const book  = bookId ? await window.api.books.get(bookId).catch(()=>null) : null;
+
 
   const avatar = document.getElementById('chatPeerAvatar');
   const openProfileBtn = document.getElementById('openProfileBtn');
   document.getElementById('chatWith').textContent = displayName(buddy);
   document.getElementById('chatMeta').textContent = book ? `About: ${book.title}` : '';
 
-  if (buddy?.avatar)
+  if (buddy?.avatar) 
+  {
     avatar.innerHTML = `<img src="${buddy.avatar}" alt="${displayName(buddy)}">`;
-  else
-    avatar.innerHTML = (displayName(buddy).slice(0,1).toUpperCase()) || '👤';
+  } else 
+  {
+    avatar.innerHTML = displayName(buddy).slice(0,1).toUpperCase() || '👤';
+  }
 
-  const openProfile = (e)=>{ e.preventDefault?.(); if (withId) location.hash = `#/user?id=${encodeURIComponent(withId)}`; };
+  const openProfile = (e) => 
+  { 
+    e.preventDefault?.(); 
+    if (withId) location.hash = `#/user?id=${encodeURIComponent(withId)}`;
+  };
   avatar.addEventListener('click', openProfile);
   openProfileBtn.addEventListener('click', openProfile);
 
@@ -46,37 +61,35 @@ export async function init()
   const text = document.getElementById('chatText');
   const sendBtn = document.getElementById('sendBtn');
 
-  async function loadHistory()
+
+
+  async function loadConversation() 
   {
     try 
     {
-      const res = await window.api.messages.list(withId, bookId); 
-      return res.items || [];
+      const data = await window.api.messages.list({ with: withId, book: bookId });
+      renderConv(data.items || []);
     } catch (e) 
     {
-      console.error(e);
-      return [];
+      feed.innerHTML = `<p class="muted">Failed to load conversation</p>`;
     }
   }
 
-  function render(items)
+  function renderConv(arr) 
   {
-    feed.innerHTML = items.map(msg => `
+    feed.innerHTML = arr.map(msg => `
       <div class="msg ${String(msg.from) === String(myId) ? 'me' : 'them'}">
         <div class="bubble">${msg.text}</div>
-        <div class="time muted">${new Date(msg.createdAt || Date.now()).toLocaleTimeString()}</div>
+        <div class="time muted">${new Date(msg.createdAt).toLocaleString()}</div>
       </div>
     `).join('');
     feed.scrollTop = feed.scrollHeight;
   }
 
-  async function refresh()
-  {
-    const items = await loadHistory();
-    render(items);
-  }
 
-  sendBtn.addEventListener('click', async () =>
+
+
+  sendBtn.addEventListener('click', async () => 
   {
     const v = (text.value || '').trim();
 
@@ -85,44 +98,59 @@ export async function init()
 
     try 
     {
-      await window.api.messages.send(withId, v, bookId);
+      await window.api.messages.send({ to: withId, book: bookId, text: v });
       text.value = '';
-      await refresh();
-    } catch (e) {
-      alert(e?.message || String(e));
+      await loadConversation();
+    } catch (e) 
+    {
+      alert('Failed: ' + (e?.message || e));
     }
   });
 
 
+
   const confirmBtn = document.getElementById('confirmBtn');
-  function swapKey(withId, bookId){ return `swap_${withId}_${bookId}`; }
-  function renderConfirm()
+  async function renderConfirm() 
   {
-    const state = localStorage.getItem(swapKey(withId, bookId)) || 'none';
-    const otherConfirmed = localStorage.getItem(swapKey(withId, bookId) + '_other') === '1';
-    confirmBtn.textContent = state === 'me' ? 'Swap confirmed ✓' : 'Confirm swap';
-    confirmBtn.classList.toggle('primary', state === 'me');
-    document.getElementById('chatMeta').textContent =
-      (book ? `About: ${book.title}. ` : '') +
-      (state === 'me' ? 'You confirmed. ' : '') +
-      (otherConfirmed ? 'Partner confirmed ✓' : 'Waiting partner...');
+    try 
+    {
+      const data = await window.api.swaps.get({ with: withId, book: bookId });
+      const meConfirmed = data.meConfirmed;
+      const otherConfirmed = data.otherConfirmed;
+
+      confirmBtn.textContent = meConfirmed ? 'Swap confirmed ✓' : 'Confirm swap';
+      confirmBtn.classList.toggle('primary', meConfirmed);
+
+      document.getElementById('chatMeta').textContent =
+        (book ? `About: ${book.title}. ` : '') +
+        (meConfirmed ? 'You confirmed. ' : '') +
+        (otherConfirmed ? 'Partner confirmed ✓' : 'Waiting partner...');
+    } catch 
+    {
+      confirmBtn.textContent = 'Confirm swap';
+    }
   }
-  confirmBtn.addEventListener('click', () =>
+
+  confirmBtn.addEventListener('click', async () => 
   {
-    const cur = localStorage.getItem(swapKey(withId, bookId));
-    const next = cur === 'me' ? 'none' : 'me';
-    localStorage.setItem(swapKey(withId, bookId), next);
-    renderConfirm();
+    try 
+    {
+      await window.api.swaps.toggle({ with: withId, book: bookId });
+      await renderConfirm();
+    } catch (e) 
+    {
+      alert('Failed: ' + (e?.message || e));
+    }
   });
+
 
 
   const reportBtn = document.getElementById('reportBtn');
-  reportBtn.addEventListener('click', (e) =>
-  {
+  reportBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    location.hash = `#/report?to=${encodeURIComponent(withId)}&book=${encodeURIComponent(bookId||'')}`;
+    location.hash = `#/report?to=${encodeURIComponent(withId)}&book=${encodeURIComponent(bookId)}`;
   });
 
-  await refresh();
-  renderConfirm();
+  await loadConversation();
+  await renderConfirm();
 }

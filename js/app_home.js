@@ -3,11 +3,11 @@ const defaultCover = 'images/def_user.png';
 export async function init()
 {
   const nameEl = document.getElementById('userName');
-  if (nameEl) 
+  if (nameEl)
   {
     try 
     {
-      const me = await window.api.me(); 
+      const me = await window.api.me();
       const full = [me?.firstName, me?.lastName].filter(Boolean).join(' ');
       nameEl.textContent = full || 'Friend';
     } catch 
@@ -16,32 +16,50 @@ export async function init()
     }
   }
 
+
   const bell  = document.getElementById('btnBell');
   const heart = document.getElementById('btnHeart');
   const badge = document.getElementById('bellBadge');
-  const msgs  = document.getElementById('btnMsgs'); 
-  try 
+  const msgs  = document.getElementById('btnMsgs');
+
+
+  try
   {
-    const c = (JSON.parse(localStorage.getItem('notifications')||'[]')||[]).filter(n=>!n.read).length;
-    if (c>0){ badge.style.display='grid'; badge.textContent=String(c); }
-  } catch {}
-  
-  bell && bell.addEventListener('click', ()=> location.hash = '#/notifications');
+    const data = await window.api.notifications.list(true); 
+    const c = Array.isArray(data?.items) ? data.items.length : 0;
+
+    if (c > 0) 
+    {
+      badge.style.display = 'grid';
+      badge.textContent = String(c);
+    } else 
+    {
+      badge.style.display = 'none';
+    }
+  } catch 
+  {
+    badge.style.display = 'none';
+  }
+
+  bell  && bell.addEventListener('click', ()=> location.hash = '#/notifications');
   heart && heart.addEventListener('click',()=> location.hash = '#/likes');
-  msgs && msgs.addEventListener('click', ()=> location.hash = '#/messages');
+  msgs  && msgs.addEventListener('click', ()=> location.hash = '#/messages');
+
+
 
   const chips = document.getElementById('chips');
 
-  if (chips) 
+  if (chips)
   {
     try 
     {
       const genres = await window.api.books.genres();
       chips.replaceChildren(
-        ...(Array.isArray(genres) ? genres : []).map(g=>{
-          const b=document.createElement('button');
-          b.className='chip';
-          b.textContent=g;
+        ...(Array.isArray(genres) ? genres : []).map(g=>
+          {
+          const b = document.createElement('button');
+          b.className = 'chip';
+          b.textContent = g;
           b.addEventListener('click', async ()=>
           {
             const data = await window.api.books.list({ genre: g });
@@ -68,15 +86,12 @@ export async function init()
     try 
     {
       const data = await window.api.books.list(params);
+
       return Array.isArray(data.items) ? data.items : [];
-    } catch 
-    { 
-      return []; 
+    } catch {
+      return [];
     }
   }
-
-
-
 
   function render(arr)
   {
@@ -93,7 +108,10 @@ export async function init()
       const badges = card.querySelector('.badges');
       badges.replaceChildren(...((b.tags||[]).map(t=>
       {
-        const s=document.createElement('span'); s.className='badge'; s.textContent=t; return s;
+        const s = document.createElement('span'); 
+        s.className='badge'; 
+        s.textContent=t; 
+        return s;
       })));
       frag.appendChild(card);
     });
@@ -103,18 +121,17 @@ export async function init()
   render(await loadBooks());
 
   list.addEventListener('click', (e) =>
-  {
+    {
     const card = e.target.closest('.card-book');
 
     if (!card) 
       return;
 
-    
     location.hash = `#/book?id=${encodeURIComponent(card.dataset.id)}`;
   });
 
   const btn = document.getElementById('qBtn');
-  btn && btn.addEventListener('click', async () =>
+  btn && btn.addEventListener('click', async ()=>
   {
     const q = document.getElementById('q').value.trim();
     const data = await window.api.books.list({ q });
