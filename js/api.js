@@ -13,18 +13,13 @@ async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {
   if (auth) 
   {
     const t = getToken();
-
-    if (!t) 
-      throw new Error('NO_TOKEN');
-
+    if (!t) throw new Error('NO_TOKEN');
     h.Authorization = `Bearer ${t}`;
   }
+
   const res  = await fetch(`${API_BASE}${path}`, { method, headers: h, body: body ? JSON.stringify(body) : undefined });
   let data = null;
-  try 
-  { 
-    data = await res.json(); 
-  } catch {}
+  try { data = await res.json(); } catch {}
 
   if (!res.ok) 
   {
@@ -53,43 +48,46 @@ window.api =
 
   login:    (email, password) => apiFetch('/api/auth/login',    { method:'POST', body:{ email, password } }),
   register: (payload)         => apiFetch('/api/auth/register', { method:'POST', body: payload }),
-  me:       async ()          => (await apiFetch('/api/auth/me', { auth:true })).user,
-
+  me:       async () => {
+    const d = await apiFetch('/api/auth/me', { auth:true });
+    return d && d.user ? d.user : d;  
+  },
 
 
   users: 
   {
-    get:     (id)      => apiFetch(`/api/users/${id}`, { method:'GET' }),
-    update:  (payload) => apiFetch('/api/users/me',    { method:'PUT',  auth:true, body: payload }),
-    password:({ currentPassword, newPassword }) =>
-              apiFetch('/api/users/me/password',       { method:'PUT',  auth:true, body:{ currentPassword, newPassword } }),
+    get: async (id) => {
+      const d = await apiFetch(`/api/users/${id}`, { method:'GET' });
+      return d && d.user ? d.user : d;  
+    },
+    update: async (payload) => {
+      const d = await apiFetch('/api/users/me', { method:'PUT', auth:true, body: payload });
+      return d && d.user ? d.user : d;  
+    },
+    password: ({ currentPassword, newPassword }) =>
+      apiFetch('/api/users/me/password', { method:'PUT', auth:true, body:{ currentPassword, newPassword } }),
   },
 
-
-
+  // books
   books: 
   {
     list:   (params={}) => apiFetch('/api/books' + buildQuery(params), { method:'GET' }),
-    genres: async ()    => (await apiFetch('/api/books/genres',        { method:'GET' })).items || [],
-    get:    (id)        => apiFetch(`/api/books/${id}`,                { method:'GET' }),
-    create: (p)         => apiFetch('/api/books',                      { method:'POST',   auth:true, body:p }),
-    update: (id,p)      => apiFetch(`/api/books/${id}`,                { method:'PUT',    auth:true, body:p }),
-    remove: (id)        => apiFetch(`/api/books/${id}`,                { method:'DELETE', auth:true }),
-    like:   (id)        => apiFetch(`/api/books/${id}/like`,           { method:'POST',   auth:true }),
-    unlike: (id)        => apiFetch(`/api/books/${id}/like`,           { method:'DELETE', auth:true }),
+    genres: async ()    => (await apiFetch('/api/books/genres', { method:'GET' })).items || [],
+    get:    (id)        => apiFetch(`/api/books/${id}`, { method:'GET' }),
+    create: (p)         => apiFetch('/api/books', { method:'POST', auth:true, body:p }),
+    update: (id,p)      => apiFetch(`/api/books/${id}`, { method:'PUT',  auth:true, body:p }),
+    remove: (id)        => apiFetch(`/api/books/${id}`, { method:'DELETE', auth:true }),
+    like:   (id)        => apiFetch(`/api/books/${id}/like`, { method:'POST', auth:true }),
+    unlike: (id)        => apiFetch(`/api/books/${id}/like`, { method:'DELETE', auth:true }),
     liked:  ()          => apiFetch('/api/books' + buildQuery({ liked:'me' }), { method:'GET', auth:true }),
   },
-
-
 
   messages: 
   {
     list: (params={}) => apiFetch('/api/messages' + buildQuery(params), { auth:true }),
     send: ({ to, text, book=null }) =>
-          apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
+      apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
   },
-
-
 
   notifications: 
   {
@@ -107,9 +105,6 @@ window.api =
     get:    (p) => apiFetch('/api/swaps' + buildQuery(p), { auth:true }),
     toggle: (p) => apiFetch('/api/swaps/toggle', { method:'POST', auth:true, body:p }),
   },
-
-
-
 
   admin: 
   {
