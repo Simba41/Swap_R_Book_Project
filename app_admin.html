@@ -16,9 +16,14 @@
     <button id="showReports" class="btn">Reports</button>
     <button id="showChanges" class="btn">Changes</button>
 
-    <!-- статическая кнопка: обязательно есть в DOM -->
+
     <button id="btnMsgsAdmin" class="btn">Messages</button>
   </div>
-
+  <script>
+  document.addEventListener('DOMContentLoaded', () => 
+  {
+    if (window.initAdmin) window.initAdmin();
+  });
+</script>
   <div id="adminFeed"></div>
 </section>
