@@ -83,23 +83,30 @@ window.api =
     liked:  ()          => apiFetch('/api/books' + buildQuery({ liked:'me' }), { method:'GET', auth:true }),
   },
 
-  messages: {
-  list: (params = {}) => {
+  messages: 
+  {
+  list: (params = {}) => 
+  {
     const hasPeer = params && typeof params === 'object' && params.with;
     const path = hasPeer
-      ? '/api/messages' + buildQuery(params)        // тред диалога
-      : '/api/messages/conversations';              // список диалогов
-    return apiFetch(path, { auth: true });
+      ? '/api/messages' + buildQuery(params)        
+      : '/api/messages/conversations';              
+    return apiFetch(path, { auth:true });
   },
   send: ({ to, text, book=null }) =>
     apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
 },
 
-  notifications: 
-  {
-    list: (unread=false) => apiFetch('/api/notifications' + buildQuery({ unread: unread ? 'true' : 'false' }), { auth:true }),
-    read: (id)           => apiFetch(`/api/notifications/${id}/read`, { method:'PUT', auth:true }),
-  },
+
+notifications: 
+{
+  list: (unread=false) =>
+    apiFetch('/api/notifications' + buildQuery({ unread: unread ? 'true':'false' }), { auth:true }),
+  read: (id) =>
+    apiFetch(`/api/notifications/${id}/read`, { method:'PUT', auth:true }),
+  readAll: () =>
+    apiFetch('/api/notifications/read-all', { method:'PUT', auth:true })  
+},
 
   reports: 
   { 

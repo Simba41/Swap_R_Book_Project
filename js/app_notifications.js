@@ -4,10 +4,9 @@ async function loadNotifs()
   {
     const d = await window.api.notifications.list(); 
     return Array.isArray(d?.items) ? d.items : [];
-  } 
-  catch (e) 
+  } catch (e) 
   {
-    console.error("❌ loadNotifs error:", e);
+    console.error(" loadNotifs error:", e);
     return [];
   }
 }
@@ -16,28 +15,27 @@ async function markRead(id)
 {
   try 
   {
-    await window.api.notifications.read(id); 
-  } 
-  catch (e) 
+    await window.api.notifications.read(id);
+  } catch (e) 
   {
-    console.error("❌ markRead error:", e);
+    console.error(" markRead error:", e);
   }
 }
 
-export async function updateBellBadge() 
-{
+export async function updateBellBadge() {
   const badge = document.getElementById('bellBadge');
-  if (!badge) return;
+
+  if (!badge) 
+    return;
 
   let arr = [];
   try 
   {
     const d = await window.api.notifications.list(true);
     arr = Array.isArray(d?.items) ? d.items : [];
-  } 
-  catch (e) 
+  } catch (e) 
   {
-    console.error("❌ updateBellBadge error:", e);
+    console.error(" updateBellBadge error:", e);
   }
 
   const c = arr.length;
@@ -46,15 +44,14 @@ export async function updateBellBadge()
   {
     badge.style.display = 'grid';
     badge.textContent = String(c);
-  } 
-  else 
+  } else 
   {
     badge.style.display = 'none';
     badge.textContent = '0';
   }
 }
 
-export async function init()
+export async function init() 
 {
   const list  = document.getElementById('notifList');
   const tpl   = document.getElementById('tpl-item');
@@ -64,8 +61,7 @@ export async function init()
 
   if (!arr.length) 
   {
-    if (empty) 
-      list.replaceChildren(empty.content.firstElementChild.cloneNode(true));
+    if (empty) list.replaceChildren(empty.content.firstElementChild.cloneNode(true));
     await updateBellBadge();
     return;
   }
@@ -81,14 +77,17 @@ export async function init()
     const txt   = n.text  || '';
     const link  = n.link  || '';
 
-    el.querySelector('.n-title').textContent = title;
-    el.querySelector('.n-time').textContent  = new Date(n.createdAt || Date.now()).toLocaleString();
-    el.querySelector('.n-text').textContent  = txt;
+    const titleEl = el.querySelector('.n-title');
+    const timeEl  = el.querySelector('.n-time');
+    const textEl  = el.querySelector('.n-text');
+    if (titleEl) titleEl.textContent = title;
+    if (timeEl)  timeEl.textContent  = new Date(n.createdAt || Date.now()).toLocaleString();
+    if (textEl)  textEl.textContent  = txt;
 
     const btn = el.querySelector('.n-open');
     if (btn) 
     {
-      btn.addEventListener('click', async () => 
+      btn.addEventListener('click', async () =>
       {
         await markRead(n._id);
         await updateBellBadge();
@@ -96,11 +95,16 @@ export async function init()
       });
     }
 
-    if (!n.read) el.style.borderColor = '#1B497D';
-
+    if (!n.read) el.style.borderColor = '#1B497D'; 
     frag.appendChild(el);
   }
 
   list.replaceChildren(frag);
+
+
+  try 
+  { 
+    await window.api.notifications.readAll?.(); 
+  } catch {}
   await updateBellBadge();
 }
