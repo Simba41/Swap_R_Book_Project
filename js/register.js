@@ -1,13 +1,23 @@
-(() => 
-{
+(() => {
   const form = document.getElementById('registerForm');
   const btn  = document.getElementById('submitBtn') || form.querySelector('button[type="submit"]');
   const msg  = document.getElementById('formMsg');
 
-  function setMsg(text, type = '') { if (!msg) return; msg.textContent = text || ''; msg.className = `msg ${type}`; }
-  function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+  function setMsg(text, type = '') 
+  { 
+    if (!msg) 
+      return; 
 
-  form.addEventListener('submit', async (e) =>
+    msg.textContent = text || ''; 
+    msg.className = `msg ${type}`; 
+  }
+
+  function validEmail(v)
+  { 
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); 
+  }
+
+  form.addEventListener('submit', async (e) => 
   {
     e.preventDefault();
     setMsg('');
@@ -25,14 +35,14 @@
 
     try 
     {
-      await window.api.register({ firstName, lastName, email, password });
-      setMsg('Account created. Redirecting…', 'success');
-      setTimeout(() => location.replace('login.html')); // 700 мс на чтение сообщения
-    } catch (error) 
-    {
+      const { token, user } = await window.api.register({ firstName, lastName, email, password });
+      window.setToken(token); 
+      setMsg(`Welcome, ${user.firstName}! Redirecting…`, 'success');
+
+      location.replace('app.html'); 
+    } catch (error) {
       setMsg(error.message, 'error');
-    } finally 
-    {
+    } finally {
       btn && (btn.disabled = false);
     }
   });
