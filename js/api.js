@@ -84,15 +84,14 @@ window.api =
   },
 
   messages: {
-  list: (params = {}) => 
-  {
+  list: (params = {}) => {
     const hasPeer = params && typeof params === 'object' && params.with;
     const path = hasPeer
-      ? '/api/messages' + buildQuery(params)        
-      : '/api/messages/conversations';            
+      ? '/api/messages' + buildQuery(params)        // тред диалога
+      : '/api/messages/conversations';              // список диалогов
     return apiFetch(path, { auth: true });
   },
-  send: ({ to, text, book = null }) =>
+  send: ({ to, text, book=null }) =>
     apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
 },
 
