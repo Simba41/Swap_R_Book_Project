@@ -1,3 +1,4 @@
+
 (function () 
 {
   const PROD = 'https://swap-r-book-project-server.onrender.com';
@@ -11,7 +12,6 @@
 async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {}) 
 {
   const h = { 'Content-Type': 'application/json', ...headers };
-
   if (auth) 
   {
     const t = window.getToken();
@@ -22,10 +22,9 @@ async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {
     h.Authorization = `Bearer ${t}`;
   }
 
-  const res  = await fetch(`${API_BASE}${path}`, { 
-    method, 
-    headers: h, 
-    body: body ? JSON.stringify(body) : undefined 
+  const res = await fetch(`${API_BASE}${path}`, 
+  {
+    method, headers: h, body: body ? JSON.stringify(body) : undefined
   });
 
   let data = null;
@@ -34,7 +33,7 @@ async function apiFetch(path, { auth=false, method='GET', body, headers={} } = {
     data = await res.json(); 
   } catch {}
 
-  if (!res.ok) 
+  if (!res.ok)
   {
     const msg = (data && data.message) ? data.message : `HTTP ${res.status}`;
     if (res.status === 401) 
@@ -64,8 +63,8 @@ window.api =
 
   users: 
   {
-    get:     async (id) => (await apiFetch(`/api/users/${id}`, { method:'GET' })).user,
-    update:  async (payload) => (await apiFetch('/api/users/me', { method:'PUT', auth:true, body: payload })).user,
+    get:     async (id)  => (await apiFetch(`/api/users/${id}`, { method:'GET' })).user,
+    update:  async (p)   => (await apiFetch('/api/users/me', { method:'PUT', auth:true, body:p })).user,
     password:({ currentPassword, newPassword }) =>
               apiFetch('/api/users/me/password', { method:'PUT', auth:true, body:{ currentPassword, newPassword } }),
   },
@@ -85,28 +84,27 @@ window.api =
 
   messages: 
   {
-  list: (params = {}) => 
-  {
-    const hasPeer = params && typeof params === 'object' && params.with;
-    const path = hasPeer
-      ? '/api/messages' + buildQuery(params)        
-      : '/api/messages/conversations';              
-    return apiFetch(path, { auth:true });
+    list: (params = {}) => 
+    {
+      const hasPeer = params && typeof params === 'object' && params.with;
+      const path = hasPeer
+        ? '/api/messages' + buildQuery(params)        
+        : '/api/messages/conversations';              
+      return apiFetch(path, { auth:true });
+    },
+    send: ({ to, text, book=null }) =>
+      apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
   },
-  send: ({ to, text, book=null }) =>
-    apiFetch('/api/messages/send', { method:'POST', auth:true, body:{ to, text, book } }),
-},
 
-
-notifications: 
-{
-  list: (unread=false) =>
-    apiFetch('/api/notifications' + buildQuery({ unread: unread ? 'true':'false' }), { auth:true }),
-  read: (id) =>
-    apiFetch(`/api/notifications/${id}/read`, { method:'PUT', auth:true }),
-  readAll: () =>
-    apiFetch('/api/notifications/read-all', { method:'PUT', auth:true })  
-},
+  notifications: 
+  {
+    list: (unread=false) =>
+      apiFetch('/api/notifications' + buildQuery({ unread: unread ? 'true' : 'false' }), { auth:true }),
+    read: (id) =>
+      apiFetch(`/api/notifications/${id}/read`, { method:'PUT', auth:true }),
+    readAll: () =>
+      apiFetch('/api/notifications/read-all', { method:'PUT', auth:true }),
+  },
 
   reports: 
   { 
@@ -126,6 +124,7 @@ notifications:
     ban:     (id)        => apiFetch(`/api/admin/users/${id}/ban`,   { method:'PUT', auth:true }),
     unban:   (id)        => apiFetch(`/api/admin/users/${id}/unban`, { method:'PUT', auth:true }),
     books:   (params={}) => apiFetch('/api/admin/books' + buildQuery(params), { auth:true }),
+    conversations: (p={})=> apiFetch('/api/admin/conversations' + buildQuery(p), { auth:true }),
     messages:(params={}) => apiFetch('/api/admin/messages' + buildQuery(params), { auth:true }),
     reports: (params={}) => apiFetch('/api/admin/reports' + buildQuery(params), { auth:true }),
     resolveReport: (id)  => apiFetch(`/api/admin/reports/${id}/resolve`, { method:'PUT', auth:true }),

@@ -1,3 +1,15 @@
+function displayName(u) 
+{
+
+  if (!u) 
+    return 'User';
+
+  const fn = (u.firstName||'').trim();
+  const ln = (u.lastName||'').trim();
+  const full = [fn, ln].filter(Boolean).join(' ').trim();
+  return full || u.email || 'User';
+}
+
 export async function init() 
 {
   const list = document.getElementById('msgList');
@@ -11,9 +23,9 @@ export async function init()
   } catch {}
 
   if (!me) 
-  {
-    list.innerHTML = `<p class="muted">Not logged in</p>`;
-    return;
+  { 
+    list.innerHTML = `<p class="muted">Not logged in</p>`; 
+    return; 
   }
 
   let convs = [];
@@ -23,7 +35,7 @@ export async function init()
     convs = res.items || [];
   } catch (e) 
   {
-    console.error(' load conversations error:', e);
+    console.error('messages.list error:', e);
   }
 
   if (!convs.length) 
@@ -43,13 +55,14 @@ export async function init()
     el.dataset.book = c.book || '';
 
 
-
     let withId = '';
-
-    if (c.with) withId = String(c.with);
-    else if (c.peerId) withId = String(c.peerId);
-    else if (c.peer && (c.peer._id || c.peer.id)) withId = String(c.peer._id || c.peer.id);
-    else if (convStr) 
+    if (c.with) 
+    {
+      withId = String(c.with);
+    } else if (c.peerId) 
+    {
+      withId = String(c.peerId);
+    } else if (convStr) 
     {
       const parts = String(convStr).split('_');
       const a = parts[0], b = parts[1];
@@ -58,37 +71,39 @@ export async function init()
     }
 
 
-    let user = c.peer || null;
-    if (!user && withId) 
+
+    let peer = null;
+    if (c.peer && (c.peer._id || c.peer.email)) 
     {
+      peer = c.peer;
+    } else if (withId) 
+    {
+      
       try 
-      {
-        user = await window.api.users.get(withId); 
+      { 
+        peer = await window.api.users.get(withId); 
       } catch {}
     }
 
-    let displayName = 'User';
-    if (user) 
-    {
-      const fn = user.firstName || '';
-      const ln = user.lastName || '';
-      const full = [fn, ln].filter(Boolean).join(' ').trim();
-      displayName = full || user.email || 'User';
-    }
+
+    let book = null;
+    try 
+    { 
+      if (c.book) book = await window.api.books.get(c.book); 
+    } catch {}
 
     const title = el.querySelector('.conv-title');
     const sub   = el.querySelector('.conv-sub');
 
-    title.textContent = displayName;
-    sub.textContent = (c.bookTitle ? `About: ${c.bookTitle}. ` : '')
-      + new Date(c.updatedAt || Date.now()).toLocaleString()
-      + (c.lastText ? ` — ${String(c.lastText).slice(0, 80)}` : '');
+    title.textContent = displayName(peer);
+    sub.textContent   = (book ? `About: ${book.title}. ` : '')
+                      + new Date(c.updatedAt || Date.now()).toLocaleString()
+                      + (c.lastText ? ` — ${String(c.lastText).slice(0,80)}` : '');
 
     el.addEventListener('click', () => 
     {
       const bookId = el.dataset.book || '';
-      const target = `#/chat?with=${encodeURIComponent(withId)}${bookId ? `&book=${encodeURIComponent(bookId)}` : ''}`;
-      location.hash = target;
+      location.hash = `#/chat?with=${encodeURIComponent(withId)}${bookId ? `&book=${encodeURIComponent(bookId)}` : ''}`;
     });
 
     frag.appendChild(el);

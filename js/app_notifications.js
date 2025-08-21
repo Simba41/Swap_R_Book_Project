@@ -1,8 +1,9 @@
+
 async function loadNotifs() 
 {
   try 
   {
-    const d = await window.api.notifications.list();
+    const d = await window.api.notifications.list(false); 
     return Array.isArray(d?.items) ? d.items : [];
   } catch (e) 
   {
@@ -32,7 +33,7 @@ export async function updateBellBadge()
   let arr = [];
   try 
   {
-    const d = await window.api.notifications.list(true); 
+    const d = await window.api.notifications.list(true);
     arr = Array.isArray(d?.items) ? d.items : [];
   } catch (e) 
   {
@@ -52,35 +53,22 @@ export async function updateBellBadge()
   }
 }
 
-async function tryMarkAllRead() 
-{
-  try 
-  {
-    await fetch(`${window.API_BASE}/api/notifications/read-all`, 
-    {
-      method: 'PUT',
-      headers: 
-      {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.getToken()}`
-      }
-    });
-  } catch (e) 
-  {
-   
-  }
-}
-
 export async function init() 
 {
   const list  = document.getElementById('notifList');
   const tpl   = document.getElementById('tpl-item');
   const empty = document.getElementById('tpl-empty');
 
+
+  try 
+  { 
+    await window.api.notifications.readAll(); 
+  } catch {}
+
   const arr = await loadNotifs();
 
   if (!arr.length) 
-    {
+  {
     if (empty) list.replaceChildren(empty.content.firstElementChild.cloneNode(true));
     await updateBellBadge();
     return;
@@ -94,7 +82,7 @@ export async function init()
     el.dataset.id = n._id;
 
     const title = n.title || (n.type === 'message' ? 'New message' : 'Notification');
-    const txt   = n.text  || '(no text)';
+    const txt   = n.text  || '';
     const link  = n.link  || '';
 
     el.querySelector('.n-title').textContent = title;
@@ -113,11 +101,10 @@ export async function init()
     }
 
     if (!n.read) el.style.borderColor = '#1B497D';
+
     frag.appendChild(el);
   }
 
   list.replaceChildren(frag);
-
-  await tryMarkAllRead();
   await updateBellBadge();
 }
