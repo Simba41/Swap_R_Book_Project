@@ -24,29 +24,54 @@ export async function init()
     return name || u.email || (u._id || '-');
   }
 
-  async function listConversations() 
+  exports.listConversations = async (_req, res, next) => 
   {
-    const data = await window.api.admin.conversations();
-    if (!data.items.length) 
-    {
-      feed.innerHTML = '<p class="muted">No conversations</p>';
-      return;
-    }
-    let html = `<h2>Conversations</h2><ul class="chat-list">`;
+  try 
+  {
+    const convs = await Message.aggregate([
+      { $sort: { createdAt: -1 } },
+      {
+        $group: 
+        {
+          _id: '$conv',
+          lastText: { $first: '$text' },
+          from: { $first: '$from' },
+          to: { $first: '$to' },
+          updatedAt: { $first: '$createdAt' }
+        }
+      }
+    ]);
 
-    for (const c of data.items) 
+    if (!convs.length) 
+      return res.json({ items: [] });
+
+    const ids = [];
+    convs.forEach(c => 
+    { 
+      if (c.from) ids.push(c.from); 
+      if (c.to) ids.push(c.to); 
+    });
+
+    const users = await User.find({ _id: { $in: ids } })
+      .select('_id firstName lastName email');
+
+    const map = {};
+    users.forEach(u => { map[u._id] = u; });
+
+    const items = convs.map(c => (
     {
-      html += `<li data-conv="${c.conv}" class="chat-item">
-        <b>${fmtUser(c.from)}</b> ↔ <b>${fmtUser(c.to)}</b><br>
-        ${new Date(c.updatedAt).toLocaleString()} — ${c.lastText}
-      </li>`;
-    }
-    html += `</ul>`;
-    feed.innerHTML = html;
-    feed.querySelectorAll('.chat-item').forEach(li =>
-      li.addEventListener('click', () => showConversation(li.dataset.conv))
-    );
+      conv: c._id,
+      lastText: c.lastText,
+      updatedAt: c.updatedAt,
+      from: map[c.from] || c.from,
+      to: map[c.to] || c.to
+    }));
+
+    res.json({ items });
+  } catch (e) {
+    next(e);
   }
+};
 
   async function showConversation(convId) 
   {
