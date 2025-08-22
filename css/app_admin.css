@@ -30,20 +30,18 @@
   background: transparent; 
 }
 
-.admin-table 
-{
-  width: 100%;
-  max-width: 1200px;    
-  margin: 0 auto 24px;    
+.admin-table {
+  width: 100%;                
+  max-width: 900px;         
+  margin: 0 auto 24px;       
   border-collapse: collapse;
   font-size: 14px;
   text-align: left;
   background: #fff;
   border: 1px solid #d7e3f4;
   border-radius: 8px;
-  overflow-x: auto;    
-  display: block;          
 }
+
 
 .admin-table th,
 .admin-table td 
