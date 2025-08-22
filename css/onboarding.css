@@ -32,13 +32,15 @@ body
 {
   display: flex;
   gap: 8px;
-  height: 6px;
+  height: 12px;
+  
   margin-top: 4px;
   margin-bottom: 43px; 
 }
 .progress b
 {
   flex: 1;
+  width: 125px;
   background: #cfd9e6;
   border-radius: 999px;
 }
@@ -136,9 +138,10 @@ p
 
 .btn
 {
-  height: 44px;
+  width: 327px;
+  height: 42px;
   padding: 0 16px;
-  border-radius: 12px;
+  border-radius: 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

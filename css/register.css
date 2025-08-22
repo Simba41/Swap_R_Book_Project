@@ -1,24 +1,23 @@
-
-*
+* 
 { 
     box-sizing: border-box; 
 }
 
 html, body 
-{ 
-    height: 100%; 
+{
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-
-
-body
+body 
 {
   background: #E0EFFF;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #0f1b2c;
 }
 
-.wrapper
+.wrapper 
 {
   max-width: 420px;
   min-height: 100vh;
@@ -29,30 +28,24 @@ body
   gap: 16px;
 }
 
-.wrapper.center
+.wrapper.center 
 {
   justify-content: center;
   align-items: center;
 }
 
-.card
+.card 
 { 
-    width: 100%;
-     max-width: 360px; 
+    width: 100%; 
 }
 
-.title
+.title 
 {
   margin: 4px 0 6px;
   font-size: 26px;
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
-}
-
-.title.login
-{
-  margin-bottom: 90px;
 }
 
 .subtitle 
@@ -63,40 +56,48 @@ body
   text-align: center;
 }
 
-
 form 
 {
   margin-top: 48px;
   display: grid;
   gap: 13px;
   justify-items: center;
+  width: 100%;
 }
 
-
-.row
+.row 
 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 12px;
+  width: 100%;
 }
+
+
+@media (min-width: 480px) 
+{
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 
 .field 
 {
-  width: 327px;
-  height: 84px;
+  width: 100%;
+  height: 61px;
   padding: 14px 16px;
   border: 0;
   border-radius: 9px;
-  background: #F9F3F3; 
+  background: #F9F3F3;
   color: #000000;
   outline: none;
-  box-sizing: border-box;
 }
+
 
 .field::placeholder 
 {
   color: #7a7a7a;
-  opacity: .9; 
+  opacity: .9;
 }
 
 .btn 
@@ -106,26 +107,24 @@ form
   border: 0;
   border-radius: 12px;
   background: #1B497D;
-  color: #000;
+  color: #fff;
   font-weight: 600;
   font-size: 18px;
   cursor: pointer;
-  margin-top: 207px;
+  margin-top: 114px;
 }
-
-
 
 .btn:disabled 
 { 
-  opacity: .6; 
-  cursor: not-allowed; 
+    opacity: .6; cursor: not-allowed; 
+}
+.btn:active 
+{ 
+    transform: translateY(1px); 
 }
 
-.btn:active { 
-  transform: translateY(1px); 
-}
-
-.hint {
+.hint 
+{
   margin: 10px 0 0;
   text-align: center;
   color: #6B7A90;
@@ -134,21 +133,29 @@ form
 
 .link 
 { 
-  color: #3BA0F3; 
-  text-decoration: none; 
+    color: #3BA0F3; 
+    text-decoration: none; 
 }
 
-.link:hover { 
-  text-decoration: underline; 
+.link:hover 
+{ 
+    text-decoration: underline; 
 }
 
-.msg {
+.msg 
+{
   margin: 6px 0 0;
   min-height: 18px;
   font-size: 13px;
   text-align: center;
 }
 
-.msg.error { color: #b42318; }
-.msg.success { color: #127c32; }
+.msg.error 
+{ 
+    color: #b42318; 
+}
 
+.msg.success 
+{ 
+    color: #127c32; 
+}
