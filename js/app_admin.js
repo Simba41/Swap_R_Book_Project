@@ -1,3 +1,5 @@
+let metricsChart = null;
+
 export async function init() 
 {
   const feed = document.getElementById('adminFeed');
@@ -7,13 +9,18 @@ export async function init()
     const m = await window.api.admin.metrics();
     document.getElementById('metrics').textContent =
       `USERS: ${m.users}  BOOKS: ${m.books}  MSGS: ${m.messages}  NOTIFS: ${m.notifications}`;
-  } catch 
+
+
+      initMetricChart(m);
+  } 
+  catch 
   {
     document.getElementById('metrics').textContent = 'metrics error';
   }
 
   const fmtUser = (u) => 
   {
+
     if (!u) 
       return '-';
 
@@ -24,7 +31,6 @@ export async function init()
     return full || u.email || (u._id || '-');
   };
 
-
   async function listConversations() 
   {
     const data = await window.api.admin.conversations();
@@ -33,6 +39,7 @@ export async function init()
       feed.innerHTML = '<p class="muted">No conversations</p>';
       return;
     }
+
     let html = 
     `<h2>Conversations</h2>
     <table class="admin-table">
@@ -51,6 +58,7 @@ export async function init()
     }
     html += `</tbody></table>`;
     feed.innerHTML = html;
+
     feed.querySelectorAll('.chat-item').forEach(tr => 
     {
       tr.addEventListener('click', () => showConversation(tr.dataset.conv));
@@ -63,7 +71,6 @@ export async function init()
     if (!data.items.length) 
     {
       feed.innerHTML = '<p class="muted">No messages in this conversation</p>';
-
       return;
     }
 
@@ -89,26 +96,22 @@ export async function init()
   async function listAllMessages() 
   {
     const data = await window.api.admin.messages({ page: 1, limit: 200 });
-    let html = 
-    `<h2>All Messages (latest)</h2>`;
+    let html = `<h2>All Messages (latest)</h2>`;
 
     if (!data.items || !data.items.length) 
     {
-      html += 
-      '<p class="muted">No messages</p>';
+      html += '<p class="muted">No messages</p>';
       feed.innerHTML = html;
       return;
     }
 
-    html += 
-    `<table class="admin-table"><thead>
+    html += `<table class="admin-table"><thead>
       <tr><th>Date</th><th>From</th><th>To</th><th>Text</th><th>Conv</th></tr>
     </thead><tbody>`;
 
     for (const m of data.items) 
     {
-      html += 
-      `<tr>
+      html += `<tr>
         <td>${new Date(m.createdAt).toLocaleString()}</td>
         <td>${fmtUser(m.from)}</td>
         <td>${fmtUser(m.to)}</td>
@@ -123,7 +126,7 @@ export async function init()
   document.getElementById('btnMsgsAdmin')?.addEventListener('click', listConversations);
   document.getElementById('btnAllMsgs')?.addEventListener('click', listAllMessages);
 
-
+  // Users
   document.getElementById('uSearch')?.addEventListener('click', async () => 
   {
     const q = document.getElementById('uq').value.trim();
@@ -144,11 +147,12 @@ export async function init()
     </table>`;
   });
 
-
+  // Books
   document.getElementById('bSearch')?.addEventListener('click', async () => 
   {
     const q = document.getElementById('bq').value.trim();
     const data = await window.api.admin.books({ q });
+
     feed.innerHTML = 
     `<h2>Books</h2>
     <table class="admin-table">
@@ -181,7 +185,7 @@ export async function init()
     </table>`;
   });
 
-
+  // Changes
   document.getElementById('showChanges')?.addEventListener('click', async () => 
   {
     const data = await window.api.admin.changes();
@@ -199,5 +203,58 @@ export async function init()
           </tr>`).join('')}
       </tbody>
     </table>`;
+  });
+}
+
+
+function initMetricChart(m) 
+{
+  const el = document.getElementById('metricsChart');
+
+  if (!el) 
+    return;
+
+
+  if (metricsChart) 
+  {
+    metricsChart.destroy();
+    metricsChart = null;
+  }
+
+  const data = 
+  [
+    Number(m?.users || 0),
+    Number(m?.books || 0),
+    Number(m?.messages || 0),
+    Number(m?.notifications || 0),
+  ];
+
+  metricsChart = new Chart(el, 
+  {
+    type: 'bar',
+    data: {
+      labels: ['Users', 'Books', 'Messages', 'Notifications'],
+      datasets: [{
+        label: 'Totals',
+        data: data,                 
+        // backgroundColor: [...],
+        // borderColor: [...],
+        // borderWidth: 1
+      }]
+    },
+    options: 
+    {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      },
+      scales: 
+      {
+        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
   });
 }

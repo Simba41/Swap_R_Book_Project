@@ -65,3 +65,13 @@
 {
   background: #f9fcff;
 }
+
+.metrics-wrap 
+{
+  position: relative;
+  width: 100%;
+  max-width: 1200px;     
+  margin: 0 auto 12px;
+  height: 220px;         
+}
+

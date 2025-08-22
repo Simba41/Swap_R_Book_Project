@@ -2,9 +2,16 @@
 <link rel="stylesheet" href="css/app.css" />
 
 <link rel="stylesheet" href="css/app_admin.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <section class="admin-metrics card soft">
-  <div id="metrics">loading...</div>
+  <section class="card soft" id="metricsCard" style="padding:12px">
+  <h2 style="margin:0 0 8px">Metrics</h2>
+  <div class="metrics-wrap">
+    <canvas id="metricsChart"></canvas>
+  </div>
+</section>
+
 </section>
 
 <section class="admin-panel card soft">
